@@ -1,0 +1,4 @@
+Solenoid.c:10:6:TurnOnSolenoidFluid	8	static
+Solenoid.c:15:6:TurnOffSolenoidFluid	8	static
+Solenoid.c:20:6:TurnOnSolenoidAir	8	static
+Solenoid.c:25:6:TurnOffSolenoidAir	8	static

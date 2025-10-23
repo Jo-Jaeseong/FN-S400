@@ -1,0 +1,3 @@
+Heater.c:16:6:TurnOnHeater	8	static
+Heater.c:21:6:TurnOffHeater	8	static
+Heater.c:26:6:AdjustHeaterControl	16	static

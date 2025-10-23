@@ -1,0 +1,2 @@
+max6675.c:11:9:max6675ReadReg	24	static
+max6675.c:36:7:max6675Temp	24	static

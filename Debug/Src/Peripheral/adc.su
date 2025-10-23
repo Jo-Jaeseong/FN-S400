@@ -1,0 +1,5 @@
+adc.c:27:6:InitADC	8	static
+adc.c:53:6:GetDensity	24	static
+adc.c:91:6:DisplayAvgDensity	32	static
+adc.c:132:6:arrInsert	24	static
+adc.c:137:6:arrAppend	16	static
