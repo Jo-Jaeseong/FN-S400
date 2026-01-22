@@ -9,11 +9,12 @@
 #include "Process.h"
 #include "string.h"
 
-unsigned int	ui1msCounter, ui100msCounter, uiRunningCounter, ui1sCounter, ui1minuteCounter;
+unsigned int	ui1msCounter, ui100msCounter, uiRunningCounter, ui1minuteCounter;
 
-unsigned int	uiEndTimeCounter;
+volatile unsigned int	ui1sCounter;
+volatile unsigned int	uiEndTimeCounter;
 
-unsigned char Timer_Half_1s_Flag, Timer_1s_Flag, UART_Receive_Flag, Timer_DeliSecond_Flag, Timer_CentiSecond_Flag, Timer_1minute_Flag,
+volatile unsigned char Timer_Half_1s_Flag, Timer_1s_Flag, UART_Receive_Flag, Timer_DeliSecond_Flag, Timer_CentiSecond_Flag, Timer_1minute_Flag,
 				Running_Flag, EndTimer_Flag, ProcessWait_Flag;
 
 unsigned char uart1_rx_data[20] = {0};
@@ -22,11 +23,11 @@ extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 
 extern unsigned int uiWaitTime[5];
-extern unsigned int uiTotalTime, uiFinishTime;
+extern volatile unsigned int uiTotalTime, uiFinishTime;
 extern unsigned char ProcessMode;
 extern int PeristalticPumpOnOff_Flag,FinishTimeControl_Spary;
 
-extern int Test_Start_flag;
+extern volatile int Test_Start_flag;
 extern unsigned int TestTime;
 extern unsigned int uireservetime;
 

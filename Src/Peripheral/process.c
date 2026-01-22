@@ -30,11 +30,12 @@
 
 
 extern unsigned int uiWaitTime[5];		// 0 : Not Used, 1 : PreHeat, 2 : Spray, 3 : Sterile, 4 : Scrub
-extern unsigned int uiFinishTime;
-extern unsigned int uiTotalTime;
+extern volatile unsigned int uiFinishTime;
+extern volatile unsigned int uiTotalTime;
 
-extern unsigned int	uiEndTimeCounter, ui1sCounter;
-extern unsigned char Running_Flag, EndTimer_Flag, Temperature_Error_Flag, FanControl_Error_Flag, ProcessWait_Flag;
+extern volatile unsigned int	uiEndTimeCounter, ui1sCounter;
+extern volatile unsigned char Running_Flag, EndTimer_Flag, ProcessWait_Flag;
+extern unsigned char Temperature_Error_Flag, FanControl_Error_Flag;
 
 extern float fCubic;
 extern float fInjectionPerMinute,fInjectionPerMinute2;
@@ -126,7 +127,8 @@ unsigned int uireservetime = 100;
 
 struct FLData	f_data[65];
 
-extern int Test_flag,Test_Start_flag;
+extern int Test_flag;
+extern volatile int Test_Start_flag;
 extern unsigned int TestTime;
 extern int Testfanspeed;
 
