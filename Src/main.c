@@ -104,7 +104,7 @@ uint16_t ccr=0, ccr_max = ConstantBlowerFanControlPwmCycle;//ccr_max = 3360 - 1;
 // 3700 -> 18cc, 9000 -> 7.4cc
 //unsigned int PeristalticPumpPwmCycle = ConstantPeristalticPumpPwmCycle;
 
-extern unsigned char UART_Receive_Flag, EndTimer_Flag, Timer_Half_1s_Flag,
+extern volatile unsigned char UART_Receive_Flag, EndTimer_Flag, Timer_Half_1s_Flag,
 						Timer_1s_Flag, Timer_DeliSecond_Flag, Timer_CentiSecond_Flag, Timer_MiliSecond_Flag, Timer_1minute_Flag;
 
 /* USER CODE END 0 */

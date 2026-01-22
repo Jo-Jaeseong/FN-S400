@@ -24,7 +24,7 @@ extern int IndexEndLog;
 
 extern struct FLData		f_data[65];
 
-extern unsigned char Running_Flag;
+extern volatile unsigned char Running_Flag;
 extern float fInjectionPerMinute, fInjectionPerMinute2, fInjectionPerCubic;
 extern float  fCubic;
 

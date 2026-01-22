@@ -35,8 +35,9 @@ extern RTC_HandleTypeDef hrtc;
 
 extern unsigned char uart1_rx_data[20];
 unsigned char uart1_rx_data_2[100];
-extern unsigned int  ui1sCounter, g_data_index;//, g_data_serial_index;
-extern unsigned char Running_Flag, UART_Receive_Flag;
+extern volatile unsigned int  ui1sCounter;
+extern unsigned int g_data_index;//, g_data_serial_index;
+extern volatile unsigned char Running_Flag, UART_Receive_Flag;
 
 int PeristalticPumpCnt=0;
 
@@ -164,8 +165,8 @@ extern unsigned char serialNum[13];
 extern unsigned char szStartCommand[37],szStartCommandCBT[37];	//�Ǹ�ó ����ó �Է�
 
 unsigned int uiWaitTime[5];
-unsigned int uiFinishTime;
-unsigned int uiTotalTime;
+volatile unsigned int uiFinishTime;
+volatile unsigned int uiTotalTime;
 extern unsigned int scrubbingTime;
 extern float fBoardTemperature, fHumidity, fModuleTemperature;
 float fCubic=0;
@@ -424,7 +425,7 @@ unsigned int TestTime=0;
 unsigned int input_test_time=0;
 
 int Test_flag=0;
-int Test_Start_flag=0;
+volatile int Test_Start_flag=0;
 
 void MaintenanceButton(int key){
 	switch(key) {
