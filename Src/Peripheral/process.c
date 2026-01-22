@@ -710,7 +710,7 @@ void SaveUsbLog(void){
 	t_data.volume = nUsedVolume;
 	t_data_index++;
 	if(t_data_index>=64){
-		t_data_index==64;
+		t_data_index=64;
 	}
 	if(Running_Flag){
 		f_data[t_data_index].year=t_data.year;

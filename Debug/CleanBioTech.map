@@ -9986,8 +9986,8 @@ END GROUP
 LOAD c:/st/stm32cubeide_1.3.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/crtend.o
 LOAD c:/st/stm32cubeide_1.3.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/crtn.o
                 0x000000002001ffff                _estack = 0x2001ffff
-                0x0000000000000200                _Min_Heap_Size = 0x200
-                0x0000000000000400                _Min_Stack_Size = 0x400
+                0x0000000000001000                _Min_Heap_Size = 0x1000
+                0x0000000000002000                _Min_Stack_Size = 0x2000
 
 .user_data      0x0000000008040000      0x400
                 0x0000000008040000                . = ALIGN (0x4)
@@ -12566,15 +12566,15 @@ LOAD c:/st/stm32cubeide_1.3.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x000000002000dfa0                __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x000000002000dfa0      0x600 load address 0x0000000008021d88
+                0x000000002000dfa0     0x3000 load address 0x0000000008021d88
                 0x000000002000dfa0                . = ALIGN (0x8)
                 0x000000002000dfa0                PROVIDE (end = .)
                 [!provide]                        PROVIDE (_end = .)
-                0x000000002000e1a0                . = (. + _Min_Heap_Size)
- *fill*         0x000000002000dfa0      0x200 
-                0x000000002000e5a0                . = (. + _Min_Stack_Size)
- *fill*         0x000000002000e1a0      0x400 
-                0x000000002000e5a0                . = ALIGN (0x8)
+                0x000000002000efa0                . = (. + _Min_Heap_Size)
+ *fill*         0x000000002000dfa0     0x1000 
+                0x0000000020010fa0                . = (. + _Min_Stack_Size)
+ *fill*         0x000000002000efa0     0x2000 
+                0x0000000020010fa0                . = ALIGN (0x8)
 
 /DISCARD/
  libc.a(*)

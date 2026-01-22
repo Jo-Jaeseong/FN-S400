@@ -33,7 +33,7 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
  14 .bss          0000dc98  20000308  08021d88  00040308  2**3
                   ALLOC
- 15 ._user_heap_stack 00000600  2000dfa0  08021d88  0004dfa0  2**0
+ 15 ._user_heap_stack 00003000  2000dfa0  08021d88  0004dfa0  2**0
                   ALLOC
  16 .ARM.attributes 00000030  00000000  00000000  000903d0  2**0
                   CONTENTS, READONLY
