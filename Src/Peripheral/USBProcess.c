@@ -30,11 +30,28 @@ extern int					t_data_index;
 extern int firstlogcall;
 extern struct data_format time_data;
 extern struct data_format d_data;
+extern unsigned char serialNum[13];
 
 int USBSECURITYonoff_Flag;
 int USBConnect_Flag;
 
 extern struct FLData		f_data[65];
+
+static void CopySerialNumberString(char *serial, size_t size)
+{
+	size_t limit;
+	size_t index = 0;
+
+	if (size == 0) {
+		return;
+	}
+
+	limit = size - 1;
+	for (int i = 1; i < 12 && index < limit; i++) {
+		serial[index++] = (char)serialNum[i];
+	}
+	serial[index] = '\0';
+}
 
 void USB_Error_Handler(void)
 {
@@ -51,19 +68,23 @@ void USB_Error_Handler(void)
 void DownloadUSB(){
 	EnforceIoActionGap(IO_ACTION_USB);
 	FRESULT res;
-	char ucFilename[30];
-	memset(ucFilename, 0, 30);
+	char ucFilename[64];
+	char serial[12];
+	memset(ucFilename, 0, sizeof ucFilename);
+	CopySerialNumberString(serial, sizeof serial);
 	if(USBSECURITYonoff_Flag==1){
 		snprintf(ucFilename, sizeof ucFilename,
-				 "cleanbio20%02X-%02X-%02X %02X_%02X%s",
-				 startData.year[0], startData.month[0], startData.day[0],
-				 startData.hour[0], startData.minute[0], ".cbt");
+				 "%s_20%02X-%02X-%02X_%02X:%02X:%02X%s",
+				 serial,
+				 t_data.year, t_data.month, t_data.day,
+				 t_data.hour, t_data.minute, t_data.second, ".cbt");
 	}
 	else{
 		snprintf(ucFilename, sizeof ucFilename,
-				 "cleanbio20%02X-%02X-%02X %02X_%02X%s",
-				 startData.year[0], startData.month[0], startData.day[0],
-				 startData.hour[0], startData.minute[0], ".csv");
+				 "%s_20%02X-%02X-%02X_%02X:%02X:%02X%s",
+				 serial,
+				 t_data.year, t_data.month, t_data.day,
+				 t_data.hour, t_data.minute, t_data.second, ".csv");
 	}
 
 	if(t_data_index == -1) {
@@ -243,19 +264,23 @@ void DownloadUSB2(int index){
 	if(startData.year[index]!=0){
 		FRESULT res; /* FatFs function common result code */
 
-		char ucFilename[30];
-		memset(ucFilename, 0, 30);
+		char ucFilename[64];
+		char serial[12];
+		memset(ucFilename, 0, sizeof ucFilename);
+		CopySerialNumberString(serial, sizeof serial);
 		if(USBSECURITYonoff_Flag==1){
 			snprintf(ucFilename, sizeof ucFilename,
-					 "cleanbio20%02X-%02X-%02X %02X_%02X%s",
+					 "History_%s_20%02X-%02X-%02X_%02X:%02X:%02X%s",
+					 serial,
 					 startData.year[index], startData.month[index], startData.day[index],
-					 startData.hour[index], startData.minute[index], ".cbt");
+					 startData.hour[index], startData.minute[index], 0x00, ".cbt");
 		}
 		else{
 			snprintf(ucFilename, sizeof ucFilename,
-					 "cleanbio20%02X-%02X-%02X %02X_%02X%s",
+					 "History_%s_20%02X-%02X-%02X_%02X:%02X:%02X%s",
+					 serial,
 					 startData.year[index], startData.month[index], startData.day[index],
-					 startData.hour[index], startData.minute[index], ".csv");
+					 startData.hour[index], startData.minute[index], 0x00, ".csv");
 		}
 
 
@@ -347,4 +372,3 @@ void DownloadUSB2(int index){
 		}
 	}
 }
-
