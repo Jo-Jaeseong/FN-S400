@@ -165,6 +165,7 @@ void SendMessage1(unsigned char *msg, int len){
 }
 
 void SendTestMessage(void){
+	EnforceIoActionGap(IO_ACTION_SMS);
 	char mesg[12] = {
 		0xC5, 0xD7, 0xBD, 0xBA, 0xC6, 0xAE, 0xB8, 0xDE, 0xBC, 0xBC, 0xC1, 0xF6
 	};
@@ -192,6 +193,7 @@ void SendTestMessage(void){
 
 void SendEndMessage(void)//요약
 {
+	EnforceIoActionGap(IO_ACTION_SMS);
 	if(Sms_Flag ==9){
 		char ucMessage[100];
 		memset(ucMessage, 0, 100);
@@ -225,6 +227,7 @@ void SendEndMessage(void)//요약
 
 void SendProcessMessage()
 {
+	EnforceIoActionGap(IO_ACTION_SMS);
 	if(Sms_Flag == 0){ // 분사시작
 		char ucMessage[50];
 		int iIndex = g_data_index - 1;
@@ -396,6 +399,7 @@ void SendProcessMessage()
 }
 
 void SendCurrentPPM(int hour){
+	EnforceIoActionGap(IO_ACTION_SMS);
 	char ucMessage[100];
 	memset(ucMessage, 0, 100);
 
@@ -416,6 +420,7 @@ void SendCurrentPPM(int hour){
 	SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 }
 void SendFinishTime(unsigned char smsHour, unsigned char smsMinute){
+	EnforceIoActionGap(IO_ACTION_SMS);
 	char ucMessage[70];
 	memset(ucMessage, 0, 70);
 	char Time[2]={0xBD, 0xC3};
@@ -450,6 +455,7 @@ void SendFinishTime(unsigned char smsHour, unsigned char smsMinute){
 }
 
 void SendReserveTime(unsigned char smsHour, unsigned char smsMinute){	//reserve time
+	EnforceIoActionGap(IO_ACTION_SMS);
 	char ucMessage[70];
 	memset(ucMessage, 0, 70);
 	char Time[2]={0xBD, 0xC3};

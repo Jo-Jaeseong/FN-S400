@@ -28,6 +28,10 @@
 #include "process.h"
 #include "USBProcess.h"
 
+#define IO_ACTION_GAP_MS 3000U
+
+static uint32_t last_io_action_ms;
+static IoActionType last_io_action_type = IO_ACTION_NONE;
 
 extern unsigned int uiWaitTime[5];		// 0 : Not Used, 1 : PreHeat, 2 : Spray, 3 : Sterile, 4 : Scrub
 extern volatile unsigned int uiFinishTime;
@@ -78,6 +82,19 @@ struct data_format d_data;
 
 struct data_format hour6_data;
 struct data_format testdata;
+
+void EnforceIoActionGap(IoActionType action_type)
+{
+	uint32_t now = HAL_GetTick();
+	if (last_io_action_type != IO_ACTION_NONE && last_io_action_type != action_type) {
+		uint32_t elapsed = now - last_io_action_ms;
+		if (elapsed < IO_ACTION_GAP_MS) {
+			HAL_Delay(IO_ACTION_GAP_MS - elapsed);
+		}
+	}
+	last_io_action_ms = HAL_GetTick();
+	last_io_action_type = action_type;
+}
 
 struct data_format finish_data;
 

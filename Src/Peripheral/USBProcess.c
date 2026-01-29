@@ -49,6 +49,7 @@ void USB_Error_Handler(void)
 }
 
 void DownloadUSB(){
+	EnforceIoActionGap(IO_ACTION_USB);
 	FRESULT res;
 	char ucFilename[30];
 	memset(ucFilename, 0, 30);
@@ -147,6 +148,7 @@ void DownloadUSB(){
 }
 
 void USBTEST(){
+	EnforceIoActionGap(IO_ACTION_USB);
 	FRESULT res;
 	char ucFilename[30];
 	memset(ucFilename, 0, 30);
@@ -237,6 +239,7 @@ void USBTEST(){
 	}
 }
 void DownloadUSB2(int index){
+	EnforceIoActionGap(IO_ACTION_USB);
 	if(startData.year[index]!=0){
 		FRESULT res; /* FatFs function common result code */
 
@@ -344,5 +347,4 @@ void DownloadUSB2(int index){
 		}
 	}
 }
-
 
