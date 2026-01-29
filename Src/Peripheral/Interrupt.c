@@ -7,6 +7,7 @@
 
 #include "main.h"
 #include "Process.h"
+#include "rtos_app.h"
 #include "string.h"
 
 unsigned int	ui1msCounter, ui100msCounter, uiRunningCounter, ui1minuteCounter;
@@ -37,11 +38,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		if((ui1msCounter % 10) == 0){
 			if(Running_Flag){
 				Timer_CentiSecond_Flag = 1;
+				RTOS_Notify_Event(RTOS_EVENT_10MS);
 				uiTotalTime ++;
 				if(EndTimer_Flag == 0){
 					uiEndTimeCounter--;
 					if(uiEndTimeCounter == 0){
 						EndTimer_Flag = 1;
+						RTOS_Notify_Event(RTOS_EVENT_END_TIMER);
 					}
 					if(uiWaitTime[ProcessMode] > 0){
 						uiWaitTime[ProcessMode]--;
@@ -63,6 +66,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 					}
 					if(uiEndTimeCounter == 0){
 						EndTimer_Flag = 1;
+						RTOS_Notify_Event(RTOS_EVENT_END_TIMER);
 					}
 				}
 			}
@@ -70,16 +74,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		}
 		if((ui1msCounter % 100) == 0){
 			Timer_DeliSecond_Flag = 1;
+			RTOS_Notify_Event(RTOS_EVENT_100MS);
 		}
 		if(ui1msCounter == 500){
 			Timer_Half_1s_Flag = 1;
+			RTOS_Notify_Event(RTOS_EVENT_500MS);
 		}
 		if(ui1msCounter == 1000){
 			ui1msCounter = 0;
 			Timer_1s_Flag = 1;
 			Timer_Half_1s_Flag = 1;
+			RTOS_Notify_Event(RTOS_EVENT_1S | RTOS_EVENT_500MS);
 			if(ui1sCounter == 59){
 				Timer_1minute_Flag = 1;
+				RTOS_Notify_Event(RTOS_EVENT_1MIN);
 				ui1sCounter = 0;
 			}
 			else{
@@ -92,6 +100,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     if(huart->Instance == USART1){
     	UART_Receive_Flag = 1;
+    	RTOS_Notify_Event(RTOS_EVENT_UART_RX);
         HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
     }
     else if(huart->Instance == USART3){

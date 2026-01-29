@@ -29,6 +29,7 @@
 #include "flash.h"
 #include "lcd.h"
 #include "Process.h"
+#include "rtos_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -163,6 +164,7 @@ int main(void)
 
   // Initialize Process.
   InitProcess();
+  RTOS_App_Init();
 
   /* USER CODE END 2 */
 
@@ -170,36 +172,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	if(UART_Receive_Flag) {
-		UART_Receive_Flag = 0;
-		LCD_Process();
-	}
-
-	if(Timer_CentiSecond_Flag) {
-		Timer_CentiSecond_Flag = 0;
-		CentiSecondProcess();
-	}
-	if(Timer_DeliSecond_Flag) {
-		Timer_DeliSecond_Flag = 0;
-		DeliSecondProcess();
-	}
-	if(Timer_Half_1s_Flag){
-	  Timer_Half_1s_Flag=0;
-	  HalfSecondProcess();
-	}
-	if(Timer_1s_Flag) {
-		Timer_1s_Flag = 0;
-		OneSecondProcess();
-	}
-	if(Timer_1minute_Flag) {
-		Timer_1minute_Flag = 0;
-		OneMinuteProcess();
-	}
-
-	if(EndTimer_Flag) {
-		ProcessEndTimer();
-		ProcessTestEndTimer();
-	}
+	RTOS_App_RunOnce();
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
