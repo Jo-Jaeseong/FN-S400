@@ -150,4 +150,12 @@ void SaveExpectFinishTime();
 void ReserveProcess();
 void SaveReserveTime();
 
+typedef enum {
+	IO_ACTION_NONE = 0,
+	IO_ACTION_USB,
+	IO_ACTION_SMS
+} IoActionType;
+
+void EnforceIoActionGap(IoActionType action_type);
+
 #endif /* PERIPHERAL_PROCESS_H_ */
