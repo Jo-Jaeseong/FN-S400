@@ -37,6 +37,27 @@ int USBConnect_Flag;
 
 extern struct FLData		f_data[65];
 
+typedef enum {
+	USB_ERR_NONE = 0,
+	USB_ERR_APP_NOT_READY,
+	USB_ERR_DISCONNECTED,
+	USB_ERR_MOUNT_FAIL,
+	USB_ERR_OPEN_FAIL,
+	USB_ERR_WRITE_FAIL
+} UsbErrorReason;
+
+static volatile UsbErrorReason g_usb_error_reason = USB_ERR_NONE;
+static char g_usb_error_debug_text[9] = "USB_NONE";
+
+static void SetUsbErrorReason(UsbErrorReason reason, const char *debug_text)
+{
+	g_usb_error_reason = reason;
+	if (debug_text != NULL) {
+		strncpy(g_usb_error_debug_text, debug_text, sizeof g_usb_error_debug_text - 1U);
+		g_usb_error_debug_text[sizeof g_usb_error_debug_text - 1U] = '\0';
+	}
+}
+
 static void CopySerialNumberString(char *serial, size_t size)
 {
 	size_t limit;
@@ -57,6 +78,7 @@ void USB_Error_Handler(void)
 {
   /* USER CODE BEGIN USB_Error_Handler */
   /* User can add his own implementation to report the HAL error return state */
+	DisplayDebug(g_usb_error_debug_text);
 	//while(1)
 	//{
 	//}
@@ -93,10 +115,12 @@ void DownloadUSB(){
 	}
 
 	if(Appli_state != APPLICATION_READY) {
+		SetUsbErrorReason(USB_ERR_APP_NOT_READY, "USB_APP");
 		USB_Error_Handler();
 		return;
 	}
 	if(!hUsbHostFS.device.is_connected) {
+		SetUsbErrorReason(USB_ERR_DISCONNECTED, "USB_DISC");
 		USB_Error_Handler();
 		return;
 	}
@@ -105,6 +129,7 @@ void DownloadUSB(){
 	if (f_mount(&USBHFatFS, (TCHAR const*) USBHPath, 0) != FR_OK)
 	{
 		/* FatFs Initialization Error */
+		SetUsbErrorReason(USB_ERR_MOUNT_FAIL, "USB_MNT");
 		USB_Error_Handler();
 	}
 	else
@@ -112,6 +137,7 @@ void DownloadUSB(){
 		/* Create and Open a new text file object with write access */
 		if (f_open(&MyFile, ucFilename, FA_OPEN_APPEND | FA_WRITE) != FR_OK){
 			/* 'STM32.TXT' file Open for write Error */
+			SetUsbErrorReason(USB_ERR_OPEN_FAIL, "USB_OPEN");
 			USB_Error_Handler();
 		}
 		else{
@@ -157,6 +183,7 @@ void DownloadUSB(){
 			res = FR_OK;
 			if (res != FR_OK){
 				/* 'STM32.TXT' file Write or EOF Error */
+				SetUsbErrorReason(USB_ERR_WRITE_FAIL, "USB_WRIT");
 				USB_Error_Handler();
 			}
 			else{
@@ -185,10 +212,12 @@ void USBTEST(){
 	}
 
 	if(Appli_state != APPLICATION_READY){
+		SetUsbErrorReason(USB_ERR_APP_NOT_READY, "USB_APP");
 		USB_Error_Handler();
 		return;
 	}
 	if(!hUsbHostFS.device.is_connected){
+		SetUsbErrorReason(USB_ERR_DISCONNECTED, "USB_DISC");
 		USB_Error_Handler();
 		return;
 	}
@@ -197,6 +226,7 @@ void USBTEST(){
 	if (f_mount(&USBHFatFS, (TCHAR const*) USBHPath, 0) != FR_OK)
 	{
 		/* FatFs Initialization Error */
+		SetUsbErrorReason(USB_ERR_MOUNT_FAIL, "USB_MNT");
 		USB_Error_Handler();
 	}
 	else
@@ -204,6 +234,7 @@ void USBTEST(){
 		/* Create and Open a new text file object with write access */
 		if (f_open(&MyFile, ucFilename, FA_OPEN_APPEND | FA_WRITE) != FR_OK){
 			/* 'STM32.TXT' file Open for write Error */
+			SetUsbErrorReason(USB_ERR_OPEN_FAIL, "USB_OPEN");
 			USB_Error_Handler();
 		}
 		else{
@@ -249,6 +280,7 @@ void USBTEST(){
 			res = FR_OK;
 			if (res != FR_OK){
 				/* 'STM32.TXT' file Write or EOF Error */
+				SetUsbErrorReason(USB_ERR_WRITE_FAIL, "USB_WRIT");
 				USB_Error_Handler();
 			}
 			else{
@@ -285,10 +317,12 @@ void DownloadUSB2(int index){
 
 
 		if(Appli_state != APPLICATION_READY) {
+			SetUsbErrorReason(USB_ERR_APP_NOT_READY, "USB_APP");
 			USB_Error_Handler();
 			return;
 		}
 		if(!hUsbHostFS.device.is_connected) {
+			SetUsbErrorReason(USB_ERR_DISCONNECTED, "USB_DISC");
 			USB_Error_Handler();
 			return;
 		}
@@ -297,6 +331,7 @@ void DownloadUSB2(int index){
 		if (f_mount(&USBHFatFS, (TCHAR const*) USBHPath, 0) != FR_OK)
 		{
 			/* FatFs Initialization Error */
+			SetUsbErrorReason(USB_ERR_MOUNT_FAIL, "USB_MNT");
 			USB_Error_Handler();
 		}
 		else
@@ -306,6 +341,7 @@ void DownloadUSB2(int index){
 			if (f_open(&MyFile, ucFilename, FA_WRITE | FA_CREATE_ALWAYS ) != FR_OK)
 			{
 				/* 'STM32.TXT' file Open for write Error */
+				SetUsbErrorReason(USB_ERR_OPEN_FAIL, "USB_OPEN");
 				USB_Error_Handler();
 			}
 			else
@@ -360,6 +396,7 @@ void DownloadUSB2(int index){
 				if (res != FR_OK)
 				{
 					/* 'STM32.TXT' file Write or EOF Error */
+					SetUsbErrorReason(USB_ERR_WRITE_FAIL, "USB_WRIT");
 					USB_Error_Handler();
 				}
 				else
