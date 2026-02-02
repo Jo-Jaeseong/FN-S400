@@ -37,7 +37,7 @@ int USBConnect_Flag;
 
 extern struct FLData		f_data[65];
 
-static void CopySerialNumberString(char *serial, size_t size)
+static void CopySerialSuffix(char *serial, size_t size)
 {
 	size_t limit;
 	size_t index = 0;
@@ -47,7 +47,7 @@ static void CopySerialNumberString(char *serial, size_t size)
 	}
 
 	limit = size - 1;
-	for (int i = 1; i < 12 && index < limit; i++) {
+	for (int i = 8; i < 12 && index < limit; i++) {
 		serial[index++] = (char)serialNum[i];
 	}
 	serial[index] = '\0';
@@ -69,19 +69,19 @@ void DownloadUSB(){
 	EnforceIoActionGap(IO_ACTION_USB);
 	FRESULT res;
 	char ucFilename[64];
-	char serial[12];
+	char serial[5];
 	memset(ucFilename, 0, sizeof ucFilename);
-	CopySerialNumberString(serial, sizeof serial);
+	CopySerialSuffix(serial, sizeof serial);
 	if(USBSECURITYonoff_Flag==1){
 		snprintf(ucFilename, sizeof ucFilename,
-				 "%s_20%02X-%02X-%02X_%02X:%02X:%02X%s",
+				 "%s_%02X%02X%02X_%02X%02X%02X%s",
 				 serial,
 				 t_data.year, t_data.month, t_data.day,
 				 t_data.hour, t_data.minute, t_data.second, ".cbt");
 	}
 	else{
 		snprintf(ucFilename, sizeof ucFilename,
-				 "%s_20%02X-%02X-%02X_%02X:%02X:%02X%s",
+				 "%s_%02X%02X%02X_%02X%02X%02X%s",
 				 serial,
 				 t_data.year, t_data.month, t_data.day,
 				 t_data.hour, t_data.minute, t_data.second, ".csv");
@@ -265,22 +265,22 @@ void DownloadUSB2(int index){
 		FRESULT res; /* FatFs function common result code */
 
 		char ucFilename[64];
-		char serial[12];
+		char serial[5];
 		memset(ucFilename, 0, sizeof ucFilename);
-		CopySerialNumberString(serial, sizeof serial);
+		CopySerialSuffix(serial, sizeof serial);
 		if(USBSECURITYonoff_Flag==1){
 			snprintf(ucFilename, sizeof ucFilename,
-					 "History_%s_20%02X-%02X-%02X_%02X:%02X:%02X%s",
+					 "%s_%02X%02X%02X_%02X%02X%s",
 					 serial,
 					 startData.year[index], startData.month[index], startData.day[index],
-					 startData.hour[index], startData.minute[index], 0x00, ".cbt");
+					 startData.hour[index], startData.minute[index], ".cbt");
 		}
 		else{
 			snprintf(ucFilename, sizeof ucFilename,
-					 "History_%s_20%02X-%02X-%02X_%02X:%02X:%02X%s",
+					 "%s_%02X%02X%02X_%02X%02X%s",
 					 serial,
 					 startData.year[index], startData.month[index], startData.day[index],
-					 startData.hour[index], startData.minute[index], 0x00, ".csv");
+					 startData.hour[index], startData.minute[index], ".csv");
 		}
 
 
