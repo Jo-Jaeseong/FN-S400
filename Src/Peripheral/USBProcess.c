@@ -76,15 +76,15 @@ void DownloadUSB(){
 		snprintf(ucFilename, sizeof ucFilename,
 				 "%s_%02X%02X%02X_%02X%02X%02X%s",
 				 serial,
-				 t_data.year, t_data.month, t_data.day,
-				 t_data.hour, t_data.minute, t_data.second, ".cbt");
+				 startData.year[0], startData.month[0], startData.day[0],
+				 startData.hour[0], startData.minute[0], 0x00, ".cbt");
 	}
 	else{
 		snprintf(ucFilename, sizeof ucFilename,
 				 "%s_%02X%02X%02X_%02X%02X%02X%s",
 				 serial,
-				 t_data.year, t_data.month, t_data.day,
-				 t_data.hour, t_data.minute, t_data.second, ".csv");
+				 startData.year[0], startData.month[0], startData.day[0],
+				 startData.hour[0], startData.minute[0], 0x00, ".csv");
 	}
 
 	if(t_data_index == -1) {
