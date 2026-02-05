@@ -52,6 +52,16 @@ void float2char(float fValue, char *data)
 	}
 }
 
+
+int RoundAtFirstDecimal(float value)
+{
+	if (value >= 0.0f) {
+		return (int)(value + 0.5f);
+	}
+
+	return (int)(value - 0.5f);
+}
+
 void Char2Hex(unsigned char ch, char *pszHex)
 {
  unsigned char byte[2];

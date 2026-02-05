@@ -11,6 +11,7 @@
 #include "Process.h"
 #include "adc.h"
 #include "i2c.h"
+#include "util.h"
 
 extern UART_HandleTypeDef huart4;
 
@@ -206,7 +207,7 @@ void SendEndMessage(void)//요약
 				,temp, (int)startData.temperature, (int)fBoardTemperature_Max, smsEnter
 				,humid, (int)startData.humidity, (int)fHumidity_Max, smsEnter
 				,concentration, maxDensity,smsEnter
-				,sterilizer, (int)startData.volume-(int)nUsedVolume, "0x00"
+				,sterilizer, RoundAtFirstDecimal(startData.volume - nUsedVolume), "0x00"
 				);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -219,7 +220,7 @@ void SendEndMessage(void)//요약
 				,temp, (int)startData.temperature, (int)fBoardTemperature_Max, smsEnter
 				,humid, (int)startData.humidity, (int)fHumidity_Max, smsEnter
 				,concentration, maxDensity,smsEnter
-				,sterilizer, (int)startData.volume-(int)nUsedVolume, "0x00"
+				,sterilizer, RoundAtFirstDecimal(startData.volume - nUsedVolume), "0x00"
 				);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 	}

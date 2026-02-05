@@ -14,6 +14,7 @@ int Calc_Usage(int iTime, int perCubic, int perMinute);
 unsigned char hex2bcd (unsigned char x);
 float char2float(const unsigned char *data);
 void float2char(float fValue, unsigned char *data);
+int RoundAtFirstDecimal(float value);
 void Char2Hex(unsigned char ch, char *pszHex);
 void CharStr2HexStr(unsigned char const* pszCharStr, char *pszHexStr, int nSize);
 
