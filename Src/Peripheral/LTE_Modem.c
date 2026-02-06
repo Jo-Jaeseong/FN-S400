@@ -31,6 +31,8 @@ extern unsigned char  Sms_Flag;
 extern int maxDensity;
 extern int overheatFlag;
 extern float overheattemp;
+extern float fCubic;
+extern float fInjectionPerCubic;
 
 unsigned char uart4_rx_data[10];
 char user_number1[4],user_number2[4];
@@ -195,6 +197,7 @@ void SendEndMessage(void)//요약
 {
 	EnforceIoActionGap(IO_ACTION_SMS);
 	if(Sms_Flag ==9){
+		int displayVolume = (int)(fCubic * fInjectionPerCubic);
 		char ucMessage[100];
 		memset(ucMessage, 0, 100);
 		sprintf(ucMessage, "%.4s %.2s"
@@ -206,7 +209,7 @@ void SendEndMessage(void)//요약
 				,temp, (int)startData.temperature, (int)fBoardTemperature_Max, smsEnter
 				,humid, (int)startData.humidity, (int)fHumidity_Max, smsEnter
 				,concentration, maxDensity,smsEnter
-				,sterilizer, (int)startData.volume-(int)nUsedVolume, "0x00"
+				,sterilizer, displayVolume, "0x00"
 				);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -219,7 +222,7 @@ void SendEndMessage(void)//요약
 				,temp, (int)startData.temperature, (int)fBoardTemperature_Max, smsEnter
 				,humid, (int)startData.humidity, (int)fHumidity_Max, smsEnter
 				,concentration, maxDensity,smsEnter
-				,sterilizer, (int)startData.volume-(int)nUsedVolume, "0x00"
+				,sterilizer, displayVolume, "0x00"
 				);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 	}
@@ -346,9 +349,15 @@ void SendProcessMessage()
 			SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		}else{
 			char ProcessStatus[17]={ 0xC3, 0xEB, 0xBC, 0xD2, 0x20, 0xB5, 0xC7, 0xBE, 0xFA, 0xBD, 0xC0, 0xB4, 0xCF, 0xB4, 0xD9, 0x2E, 0x00};
-			SendMessage((unsigned char *)ProcessStatus, strlen(ProcessStatus));
+			char ucMessage[60];
+			memset(ucMessage, 0, 60);
+			sprintf(ucMessage, "%.17s %.2s"
+					"%.6s:%dmL %c",
+					ProcessStatus, smsEnter,
+					sterilizer, (int)nUsedVolume, "0x00");
+			SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 			HAL_Delay(100);
-			SendMessage1((unsigned char *)ProcessStatus, strlen(ProcessStatus));
+			SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 
 		}
 
