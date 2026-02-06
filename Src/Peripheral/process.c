@@ -33,7 +33,11 @@
 static uint32_t last_io_action_ms;
 static IoActionType last_io_action_type = IO_ACTION_NONE;
 
+static uint32_t last_volume_update_ms;
+static uint32_t volume_residual_ms;
+
 static float GetTargetUsedVolume(void);
+static void ResetVolumeAccumulatorClock(void);
 
 extern unsigned int uiWaitTime[5];		// 0 : Not Used, 1 : PreHeat, 2 : Spray, 3 : Sterile, 4 : Scrub
 extern volatile unsigned int uiFinishTime;
@@ -187,6 +191,7 @@ void InitProcess(void){
 	SetRTCFromLCD();
 	g_data_index = -1;
 	t_data_index = 0;
+	ResetVolumeAccumulatorClock();
 	PeristalticSpeed();
 
 }
@@ -290,6 +295,7 @@ void StartProcess(void){
 	g_data_index = 0;
 	t_data_index = 0;
 	nUsedVolume=0;
+	ResetVolumeAccumulatorClock();
 	ProcessWait_Flag = 0;
 	uiTotalTime = 0;
 
@@ -330,6 +336,7 @@ void EndProcess(void){
 	FinishTimeControl_Spary=0;
 	FirstOneMinute=1;
 	DisplayUsedVolume_flag=0;
+	ResetVolumeAccumulatorClock();
 	ReCalcTime();
 	if(ProcessMode!=1&&ProcessMode!=6){
 		SaveEndLogFlash(IndexEndLog);
@@ -662,6 +669,12 @@ static float GetTargetUsedVolume(void)
 	return fCubic * fInjectionPerCubic;
 }
 
+static void ResetVolumeAccumulatorClock(void)
+{
+	last_volume_update_ms = HAL_GetTick();
+	volume_residual_ms = 0U;
+}
+
 void OneSecondProcess(void)
 {
 	//OverHeatTempCheck(0);
@@ -670,6 +683,9 @@ void OneSecondProcess(void)
 	if(DisplayUsedVolume_flag){
 		float injectionPerSecond;
 		float targetUsedVolume = GetTargetUsedVolume();
+		uint32_t nowMs = HAL_GetTick();
+		uint32_t elapsedMs = nowMs - last_volume_update_ms;
+		uint32_t elapsedSeconds;
 
 		if(DeviceInfo.device_version==8){
 			injectionPerSecond = (fInjectionPerMinute2 / 60.0f);
@@ -678,18 +694,30 @@ void OneSecondProcess(void)
 			injectionPerSecond = (fInjectionPerMinute / 60.0f);
 		}
 
-		RFIDData.fH2O2Volume -= injectionPerSecond;
-		nUsedVolume += injectionPerSecond;
+		last_volume_update_ms = nowMs;
+		volume_residual_ms += elapsedMs;
+		elapsedSeconds = volume_residual_ms / 1000U;
+		volume_residual_ms = volume_residual_ms % 1000U;
 
-		RFIDData.fH2O2Volume = RoundToFirstDecimal(RFIDData.fH2O2Volume);
-		nUsedVolume = RoundToFirstDecimal(nUsedVolume);
+		if (elapsedSeconds > 0U) {
+			float usedVolumeDelta = injectionPerSecond * (float)elapsedSeconds;
+			RFIDData.fH2O2Volume -= usedVolumeDelta;
+			nUsedVolume += usedVolumeDelta;
 
-		if (RFIDData.fH2O2Volume < 0.0f) {
-			RFIDData.fH2O2Volume = 0.0f;
+			RFIDData.fH2O2Volume = RoundToFirstDecimal(RFIDData.fH2O2Volume);
+			nUsedVolume = RoundToFirstDecimal(nUsedVolume);
+
+			if (RFIDData.fH2O2Volume < 0.0f) {
+				RFIDData.fH2O2Volume = 0.0f;
+			}
+			if (nUsedVolume > targetUsedVolume) {
+				nUsedVolume = targetUsedVolume;
+			}
 		}
-		if (nUsedVolume > targetUsedVolume) {
-			nUsedVolume = targetUsedVolume;
-		}
+	}
+	else{
+		last_volume_update_ms = HAL_GetTick();
+		volume_residual_ms = 0U;
 	}
 	if(iFiveSecondCounter==4){
 		iFiveSecondCounter = 0;
