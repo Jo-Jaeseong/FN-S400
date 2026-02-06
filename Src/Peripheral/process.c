@@ -1083,6 +1083,17 @@ void SprayProcess(void){
 void SterileProcess(void)
 {
 //	HAL_Delay(10000);
+	float correctedUsedVolume = fCubic * fInjectionPerCubic;
+	float estimatedStartVolume = RFIDData.fH2O2Volume + nUsedVolume;
+	if(correctedUsedVolume < 0){
+		correctedUsedVolume = 0;
+	}
+	nUsedVolume = correctedUsedVolume;
+	RFIDData.fH2O2Volume = estimatedStartVolume - correctedUsedVolume;
+	if(RFIDData.fH2O2Volume < 0){
+		RFIDData.fH2O2Volume = 0;
+	}
+
 	SprayEnable_Flag = 0;
 	SaveLog();
 	TurnOnSolenoidFluid();
