@@ -134,8 +134,8 @@ void DownloadUSB(){
 				sprintf(buffer, "%3d,", (int)t_data.density);
 				CharStr2HexStr(buffer,buffer1,4);
 				f_puts(buffer1, &MyFile);
-				sprintf(buffer, "%lu", (long)RoundAtFirstDecimal(t_data.volume));
-				CharStr2HexStr(buffer,buffer1,4);
+				sprintf(buffer, "%.1f", RoundToFirstDecimal(t_data.volume));
+				CharStr2HexStr(buffer,buffer1,strlen(buffer));
 				f_puts(buffer1, &MyFile);
 			}
 			else{
@@ -152,7 +152,7 @@ void DownloadUSB(){
 				f_puts(buffer, &MyFile);
 				sprintf(buffer, "%d,", (int)t_data.density);
 				f_puts(buffer, &MyFile);
-				sprintf(buffer, "%lu\n", (long)RoundAtFirstDecimal(t_data.volume));
+				sprintf(buffer, "%.1f\n", RoundToFirstDecimal(t_data.volume));
 				f_puts(buffer, &MyFile);
 			}
 			res = FR_OK;
@@ -226,8 +226,8 @@ void USBTEST(){
 				sprintf(buffer, "%3d,", (int)t_data.density);
 				CharStr2HexStr(buffer,buffer1,4);
 				f_puts(buffer1, &MyFile);
-				sprintf(buffer, "%lu", (long)RoundAtFirstDecimal(t_data.volume));
-				CharStr2HexStr(buffer,buffer1,4);
+				sprintf(buffer, "%.1f", RoundToFirstDecimal(t_data.volume));
+				CharStr2HexStr(buffer,buffer1,strlen(buffer));
 				f_puts(buffer1, &MyFile);
 			}
 			else{
@@ -244,7 +244,7 @@ void USBTEST(){
 				f_puts(buffer, &MyFile);
 				sprintf(buffer, "%d,", (int)t_data.density);
 				f_puts(buffer, &MyFile);
-				sprintf(buffer, "%lu\n", (long)RoundAtFirstDecimal(t_data.volume));
+				sprintf(buffer, "%.1f\n", RoundToFirstDecimal(t_data.volume));
 				f_puts(buffer, &MyFile);
 			}
 			res = FR_OK;
@@ -332,8 +332,8 @@ void DownloadUSB2(int index){
 							sprintf(buffer, "%3d,", (int)f_data[i].density);
 							CharStr2HexStr(buffer,buffer1,4);
 							f_puts(buffer1, &MyFile);
-							sprintf(buffer, "%lu", (long)RoundAtFirstDecimal(f_data[i].volume));
-							CharStr2HexStr(buffer,buffer1,4);
+							sprintf(buffer, "%.1f", RoundToFirstDecimal(f_data[i].volume));
+							CharStr2HexStr(buffer,buffer1,strlen(buffer));
 							f_puts(buffer1, &MyFile);
 						}
 					}
@@ -351,7 +351,7 @@ void DownloadUSB2(int index){
 							f_puts(buffer, &MyFile);
 							sprintf(buffer, "%d,", (int)f_data[i].density);
 							f_puts(buffer, &MyFile);
-							sprintf(buffer, "%lu\n", (long)RoundAtFirstDecimal(f_data[i].volume));
+							sprintf(buffer, "%.1f\n", RoundToFirstDecimal(f_data[i].volume));
 							f_puts(buffer, &MyFile);
 						}
 					}

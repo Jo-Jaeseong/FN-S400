@@ -202,12 +202,12 @@ void SendEndMessage(void)//요약
 				"%.4s:%.2dC > %.2dC %.2s"
 				"%.4s:%.2d%% > %.2d%% %.2s"
 				"%.4s:%dppm %.2s"
-				"%.6s:%dmL %c"
+				"%.6s:%.1fmL %c"
 				,summary, smsEnter
 				,temp, (int)startData.temperature, (int)fBoardTemperature_Max, smsEnter
 				,humid, (int)startData.humidity, (int)fHumidity_Max, smsEnter
 				,concentration, maxDensity,smsEnter
-				,sterilizer, RoundAtFirstDecimal(startData.volume - nUsedVolume), "0x00"
+				,sterilizer, RoundToFirstDecimal(startData.volume - nUsedVolume), "0x00"
 				);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -215,12 +215,12 @@ void SendEndMessage(void)//요약
 				"%.4s:%.2dC > %.2dC %.2s"
 				"%.4s:%.2d%% > %.2d%% %.2s"
 				"%.4s:%dppm %.2s"
-				"%.6s:%dmL %c"
+				"%.6s:%.1fmL %c"
 				,summary, smsEnter
 				,temp, (int)startData.temperature, (int)fBoardTemperature_Max, smsEnter
 				,humid, (int)startData.humidity, (int)fHumidity_Max, smsEnter
 				,concentration, maxDensity,smsEnter
-				,sterilizer, RoundAtFirstDecimal(startData.volume - nUsedVolume), "0x00"
+				,sterilizer, RoundToFirstDecimal(startData.volume - nUsedVolume), "0x00"
 				);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 	}

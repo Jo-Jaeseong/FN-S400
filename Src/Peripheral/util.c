@@ -62,6 +62,15 @@ int RoundAtFirstDecimal(float value)
 	return (int)(value - 0.5f);
 }
 
+float RoundToFirstDecimal(float value)
+{
+	if (value >= 0.0f) {
+		return ((int)(value * 10.0f + 0.5f)) / 10.0f;
+	}
+
+	return ((int)(value * 10.0f - 0.5f)) / 10.0f;
+}
+
 void Char2Hex(unsigned char ch, char *pszHex)
 {
  unsigned char byte[2];

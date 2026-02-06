@@ -33,6 +33,8 @@
 static uint32_t last_io_action_ms;
 static IoActionType last_io_action_type = IO_ACTION_NONE;
 
+static float GetTargetUsedVolume(void);
+
 extern unsigned int uiWaitTime[5];		// 0 : Not Used, 1 : PreHeat, 2 : Spray, 3 : Sterile, 4 : Scrub
 extern volatile unsigned int uiFinishTime;
 extern volatile unsigned int uiTotalTime;
@@ -315,6 +317,9 @@ void EndProcess(void){
 	//char msg[80] = "Process Closing.";
 	//DisplayPopUpMessage(msg);
 	DisplayPage(42);	//Loading
+	if (Sms_Flag == 9) {
+		nUsedVolume = RoundToFirstDecimal(GetTargetUsedVolume());
+	}
 	SaveLog();				// Save Last Log.
 //	Write_Flash();
 //	LCD_WriteFlash();
@@ -651,19 +656,39 @@ void HalfSecondProcess(){
 
 //unsigned int iThirtySecondCounter;
 unsigned int iFiveSecondCounter;
+
+static float GetTargetUsedVolume(void)
+{
+	return fCubic * fInjectionPerCubic;
+}
+
 void OneSecondProcess(void)
 {
 	//OverHeatTempCheck(0);
 	DisplayStatus();
 	GetDensity();
 	if(DisplayUsedVolume_flag){
+		float injectionPerSecond;
+		float targetUsedVolume = GetTargetUsedVolume();
+
 		if(DeviceInfo.device_version==8){
-			RFIDData.fH2O2Volume -= (fInjectionPerMinute2/60);
-			nUsedVolume += (fInjectionPerMinute2/60);
+			injectionPerSecond = (fInjectionPerMinute2 / 60.0f);
 		}
 		else{
-			RFIDData.fH2O2Volume -= (fInjectionPerMinute/60);
-			nUsedVolume += (fInjectionPerMinute/60);
+			injectionPerSecond = (fInjectionPerMinute / 60.0f);
+		}
+
+		RFIDData.fH2O2Volume -= injectionPerSecond;
+		nUsedVolume += injectionPerSecond;
+
+		RFIDData.fH2O2Volume = RoundToFirstDecimal(RFIDData.fH2O2Volume);
+		nUsedVolume = RoundToFirstDecimal(nUsedVolume);
+
+		if (RFIDData.fH2O2Volume < 0.0f) {
+			RFIDData.fH2O2Volume = 0.0f;
+		}
+		if (nUsedVolume > targetUsedVolume) {
+			nUsedVolume = targetUsedVolume;
 		}
 	}
 	if(iFiveSecondCounter==4){
