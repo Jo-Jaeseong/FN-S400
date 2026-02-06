@@ -49,6 +49,25 @@ extern float fModuleTemperature;
 extern float fHumidity;
 extern float fDensity;
 
+static float CalcSprayVolumeBySetting(void)
+{
+	float injection_per_minute;
+	float spray_minutes;
+	float spray_volume;
+
+	if(DeviceInfo.device_version==8){
+		injection_per_minute = fInjectionPerMinute2;
+	}
+	else{
+		injection_per_minute = fInjectionPerMinute;
+	}
+
+	spray_minutes = (float)uiWaitTime[2] / 6000.0f;
+	spray_volume = injection_per_minute * spray_minutes;
+
+	return (float)((int)(spray_volume + 0.5f));
+}
+
 //extern uint32_t ret;
 float fUsedVolume=0;
 float nUsedVolume=0;
@@ -431,6 +450,7 @@ void ProcessEndTimer(void){
 			}
 			else if(ProcessMode == 2 ) {
 				// Sterile Step 0...
+				nUsedVolume = CalcSprayVolumeBySetting();
 				Sms_Flag=2;
 				Sterile_Step = 0;
 				ProcessMode = 3;
