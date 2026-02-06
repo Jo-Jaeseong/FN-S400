@@ -31,6 +31,8 @@ extern int firstlogcall;
 extern struct data_format time_data;
 extern struct data_format d_data;
 extern unsigned char serialNum[13];
+extern float fCubic;
+extern float fInjectionPerCubic;
 
 int USBSECURITYonoff_Flag;
 int USBConnect_Flag;
@@ -51,6 +53,17 @@ static void CopySerialSuffix(char *serial, size_t size)
 		serial[index++] = (char)serialNum[i];
 	}
 	serial[index] = '\0';
+}
+
+static unsigned long GetDisplayVolumeCc(float calculatedVolume)
+{
+	float targetVolume = fCubic * fInjectionPerCubic;
+
+	if (targetVolume > 0.0f && calculatedVolume >= targetVolume) {
+		return (unsigned long)targetVolume;
+	}
+
+	return (unsigned long)calculatedVolume;
 }
 
 void USB_Error_Handler(void)
@@ -133,7 +146,7 @@ void DownloadUSB(){
 				sprintf(buffer, "%3d,", (int)t_data.density);
 				CharStr2HexStr(buffer,buffer1,4);
 				f_puts(buffer1, &MyFile);
-				sprintf(buffer, "%lu", (long)t_data.volume * 1U);
+				sprintf(buffer, "%lu", GetDisplayVolumeCc(t_data.volume));
 				CharStr2HexStr(buffer,buffer1,4);
 				f_puts(buffer1, &MyFile);
 			}
@@ -151,7 +164,7 @@ void DownloadUSB(){
 				f_puts(buffer, &MyFile);
 				sprintf(buffer, "%d,", (int)t_data.density);
 				f_puts(buffer, &MyFile);
-				sprintf(buffer, "%lu\n", (long)t_data.volume * 1U);
+				sprintf(buffer, "%lu\n", GetDisplayVolumeCc(t_data.volume));
 				f_puts(buffer, &MyFile);
 			}
 			res = FR_OK;
@@ -225,7 +238,7 @@ void USBTEST(){
 				sprintf(buffer, "%3d,", (int)t_data.density);
 				CharStr2HexStr(buffer,buffer1,4);
 				f_puts(buffer1, &MyFile);
-				sprintf(buffer, "%lu", (long)t_data.volume * 1U);
+				sprintf(buffer, "%lu", GetDisplayVolumeCc(t_data.volume));
 				CharStr2HexStr(buffer,buffer1,4);
 				f_puts(buffer1, &MyFile);
 			}
@@ -243,7 +256,7 @@ void USBTEST(){
 				f_puts(buffer, &MyFile);
 				sprintf(buffer, "%d,", (int)t_data.density);
 				f_puts(buffer, &MyFile);
-				sprintf(buffer, "%lu\n", (long)t_data.volume * 1U);
+				sprintf(buffer, "%lu\n", GetDisplayVolumeCc(t_data.volume));
 				f_puts(buffer, &MyFile);
 			}
 			res = FR_OK;
@@ -331,7 +344,7 @@ void DownloadUSB2(int index){
 							sprintf(buffer, "%3d,", (int)f_data[i].density);
 							CharStr2HexStr(buffer,buffer1,4);
 							f_puts(buffer1, &MyFile);
-							sprintf(buffer, "%lu", (long)f_data[i].volume * 1U);
+							sprintf(buffer, "%lu", GetDisplayVolumeCc(f_data[i].volume));
 							CharStr2HexStr(buffer,buffer1,4);
 							f_puts(buffer1, &MyFile);
 						}
@@ -350,7 +363,7 @@ void DownloadUSB2(int index){
 							f_puts(buffer, &MyFile);
 							sprintf(buffer, "%d,", (int)f_data[i].density);
 							f_puts(buffer, &MyFile);
-							sprintf(buffer, "%lu\n", (long)f_data[i].volume * 1U);
+							sprintf(buffer, "%lu\n", GetDisplayVolumeCc(f_data[i].volume));
 							f_puts(buffer, &MyFile);
 						}
 					}
