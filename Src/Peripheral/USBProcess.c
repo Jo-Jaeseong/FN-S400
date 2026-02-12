@@ -30,28 +30,11 @@ extern int					t_data_index;
 extern int firstlogcall;
 extern struct data_format time_data;
 extern struct data_format d_data;
-extern unsigned char serialNum[13];
 
 int USBSECURITYonoff_Flag;
 int USBConnect_Flag;
 
 extern struct FLData		f_data[65];
-
-static void CopySerialSuffix(char *serial, size_t size)
-{
-	size_t limit;
-	size_t index = 0;
-
-	if (size == 0) {
-		return;
-	}
-
-	limit = size - 1;
-	for (int i = 8; i < 12 && index < limit; i++) {
-		serial[index++] = (char)serialNum[i];
-	}
-	serial[index] = '\0';
-}
 
 void USB_Error_Handler(void)
 {
@@ -61,34 +44,27 @@ void USB_Error_Handler(void)
 	//{
 	//}
 //	char msg[80] = "USB drive is not ready. Use another drive.";
-//	DisplayPopUpMessage(msg);
+//	DisplayErrorMessage(msg);
   /* USER CODE END USB_Error_Handler */
 }
 
 void DownloadUSB(){
-	EnforceIoActionGap(IO_ACTION_USB);
 	FRESULT res;
-	char ucFilename[64];
-	char serial[5];
-	memset(ucFilename, 0, sizeof ucFilename);
-	CopySerialSuffix(serial, sizeof serial);
+	char ucFilename[28];
+	memset(ucFilename, 0, 28);
+	sprintf(ucFilename, "%.8s", "cleanbio");
+	sprintf(ucFilename+8, "20%.2x-%.2x-%.2x %.2x_%.2x",
+			startData.year[0], startData.month[0], startData.day[0], startData.hour[0], startData.minute[0]);
 	if(USBSECURITYonoff_Flag==1){
-		snprintf(ucFilename, sizeof ucFilename,
-				 "%s_%02X%02X%02X_%02X%02X%02X%s",
-				 serial,
-				 startData.year[0], startData.month[0], startData.day[0],
-				 startData.hour[0], startData.minute[0], 0x00, ".cbt");
+		sprintf(ucFilename+24, "%.4s",".cbt");
 	}
 	else{
-		snprintf(ucFilename, sizeof ucFilename,
-				 "%s_%02X%02X%02X_%02X%02X%02X%s",
-				 serial,
-				 startData.year[0], startData.month[0], startData.day[0],
-				 startData.hour[0], startData.minute[0], 0x00, ".csv");
+		sprintf(ucFilename+24, "%.4s",".csv");
 	}
 
 	if(t_data_index == -1) {
-		DisplayPopUpMessage("There is no log. Try later.");
+		char msg[80] = "There is no log. Try later.";
+		DisplayErrorMessage(msg);
 		return;
 	}
 
@@ -169,19 +145,18 @@ void DownloadUSB(){
 }
 
 void USBTEST(){
-	EnforceIoActionGap(IO_ACTION_USB);
 	FRESULT res;
-	char ucFilename[30];
-	memset(ucFilename, 0, 30);
+	char ucFilename[28];
+	memset(ucFilename, 0, 28);
+	sprintf(ucFilename, "%.8s", "USBTEST_");
+	sprintf(ucFilename+8, "20%.2x-%.2x-%.2x %.2x_%.2x",
+			t_data.year, t_data.month, t_data.day, t_data.hour, t_data.minute);
+
 	if(USBSECURITYonoff_Flag==1){
-		snprintf(ucFilename, sizeof ucFilename,
-				 "USBTEST_20%.2x-%.2x-%.2x %.2x_%.2x%s",
-				 t_data.year, t_data.month, t_data.day, t_data.hour, t_data.minute, ".cbt");
+		sprintf(ucFilename+24, "%.4s",".cbt");
 	}
 	else{
-		snprintf(ucFilename, sizeof ucFilename,
-				 "USBTEST_20%.2x-%.2x-%.2x %.2x_%.2x%s",
-				 t_data.year, t_data.month, t_data.day, t_data.hour, t_data.minute, ".csv");
+		sprintf(ucFilename+24, "%.4s",".csv");
 	}
 
 	if(Appli_state != APPLICATION_READY){
@@ -260,29 +235,20 @@ void USBTEST(){
 	}
 }
 void DownloadUSB2(int index){
-	EnforceIoActionGap(IO_ACTION_USB);
 	if(startData.year[index]!=0){
 		FRESULT res; /* FatFs function common result code */
-
-		char ucFilename[64];
-		char serial[5];
-		memset(ucFilename, 0, sizeof ucFilename);
-		CopySerialSuffix(serial, sizeof serial);
+		char ucFilename[26];
+		memset(ucFilename, 0, 26);
+		sprintf(ucFilename, "%.8s", "cleanbio");
+		sprintf(ucFilename+8, "20%.2x-%.2x-%.2x %.2x_%.2x",
+				//normal
+				startData.year[index], startData.month[index], startData.day[index], startData.hour[index], startData.minute[index]);
 		if(USBSECURITYonoff_Flag==1){
-			snprintf(ucFilename, sizeof ucFilename,
-					 "%s_%02X%02X%02X_%02X%02X%s",
-					 serial,
-					 startData.year[index], startData.month[index], startData.day[index],
-					 startData.hour[index], startData.minute[index], ".cbt");
+			sprintf(ucFilename+24, "%.4s",".cbt");
 		}
 		else{
-			snprintf(ucFilename, sizeof ucFilename,
-					 "%s_%02X%02X%02X_%02X%02X%s",
-					 serial,
-					 startData.year[index], startData.month[index], startData.day[index],
-					 startData.hour[index], startData.minute[index], ".csv");
+			sprintf(ucFilename+24, "%.4s",".csv");
 		}
-
 
 		if(Appli_state != APPLICATION_READY) {
 			USB_Error_Handler();
@@ -372,3 +338,5 @@ void DownloadUSB2(int index){
 		}
 	}
 }
+
+

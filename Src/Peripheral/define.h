@@ -47,7 +47,7 @@ extern int ret;
 // PWM Sterile Percent
 #define ConstantBlowerFanControlPwmMid		75//65
 // Pan duty add percent
-#define ConstantPanDudyPercent				1
+#define ConstantPanDudyPercent				5
 
 #else
 
@@ -74,8 +74,7 @@ extern int ret;
 //#define ConstantPeristalticPumpPwmCycle	20800 //19680//20400
 
 #define ConstantInjectionPerMinute		12
-#define ConstantInjectionPerMinute2	3
-#define ConstantInjectionPerCubic		6
+#define ConstantInjectionPerCubic		6.0
 
 
 #define ConstantCubic					100
@@ -94,22 +93,24 @@ extern int ret;
 #define ConstantLowerTemperature			49.8//49.7//47.7//47.5 //18
 // Upper Temperature
 #define ConstantUpperTemperature			50.2//50//48
+// Start Temperature
+#define ConstantStartTemperature			49.7
 
 // Cut off temperature
 #define ConstantCutoffTemperature			80
 // SafeTemperature
 #define ConstantSafeTemperature			34
 
-#define OverHeat_Temperature				80
+#define OverHeat_Temperature			80
 
 
-#define ConstantPreHeatTime					5	// 1 minute.
-#define SprayCentiTime							100
-#define ConstantLineCleanTime				1  // 1 minute.
-#define ConstantNozzleCleanTime			1
-#define ConstantSterileTime					60	// 60 minute.
-#define ScrubCentiTime							100  // 1 second
-#define FinishCentiTime							100	// 1 second
+#define PreHeatCentiTime				5.0 * 60 * 100	// 1 minute.
+#define SprayCentiTime					100
+#define SterileWaitCentiTime			1.0 * 60 * 100  // 1 minute.
+#define SterileMiddleCentiTime		1.0 * 60 * 100
+#define SterileEndCentiTime			58.0 * 60 * 100	// 60 minute.
+#define ScrubCentiTime					100  // 1 second
+#define FinishCentiTime					100	// 1 second
 
 
 #else

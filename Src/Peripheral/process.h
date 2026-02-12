@@ -92,25 +92,14 @@ struct Account_format {
 };
 
 struct DeviceInfo_format {
-	//Information
-	int device_version;	//1
+	//float PeriValue1, PeriValue2; //2
+	float Peri1_15_Value, Peri1_12_Value, Peri1_9_Value;
+	float Peri2_15_Value, Peri2_12_Value, Peri2_9_Value;
+	int Device_Version;	//1
 	unsigned char year, month, Serial1, Serial2;	//4
-	char modem_number1[4], modem_number2[4];	//8
-
-	//Configuration
-	int peri1_speed, peri2_speed;
-	int fan_low_speed, fan_high_speed;
-	float lower_temperature, upper_temperature, overheat_temperature;
-
-	//Time
-	int PreHeatTime;
-	int LineCleanTime;
-	int NozzleCleanTime;
-	int SterileTime;
-
-	//Function
-	int loginonoff_flag;
-	int reservationonoff_flag;
+	char Modem_number1[4], Modem_number2[4];	//8
+	int Loginonoff_flag;
+	int Reservationonoff_flag;
 };
 
 
@@ -149,13 +138,5 @@ void SaveLastLoginLog(void);
 void SaveExpectFinishTime();
 void ReserveProcess();
 void SaveReserveTime();
-
-typedef enum {
-	IO_ACTION_NONE = 0,
-	IO_ACTION_USB,
-	IO_ACTION_SMS
-} IoActionType;
-
-void EnforceIoActionGap(IoActionType action_type);
 
 #endif /* PERIPHERAL_PROCESS_H_ */

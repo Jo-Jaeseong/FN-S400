@@ -1,6 +1,6 @@
-PeristalticPump.c:20:6:TurnOnPeristalticPump	8	static
-PeristalticPump.c:30:6:TurnOffPeristalticPump	8	static
-PeristalticPump.c:38:6:PeristalticSpeed	4	static
-PeristalticPump.c:91:6:Peri_15_Speed	4	static
-PeristalticPump.c:98:6:Peri_12_Speed	4	static
-PeristalticPump.c:105:6:Peri_9_Speed	4	static
+PeristalticPump.c:22:6:TurnOnPeristalticPump	8	static
+PeristalticPump.c:31:6:TurnOffPeristalticPump	8	static
+PeristalticPump.c:39:6:PeristalticSpeed	4	static
+PeristalticPump.c:64:6:Peri_15_Speed	4	static
+PeristalticPump.c:72:6:Peri_12_Speed	4	static
+PeristalticPump.c:80:6:Peri_9_Speed	4	static

@@ -100,11 +100,11 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint16_t ccr=0, ccr_max = ConstantBlowerFanControlPwmCycle;//ccr_max = 3360 - 1;
+uint16_t ccr[5]={}, ccr_max = ConstantBlowerFanControlPwmCycle;//ccr_max = 3360 - 1;
 // 3700 -> 18cc, 9000 -> 7.4cc
 //unsigned int PeristalticPumpPwmCycle = ConstantPeristalticPumpPwmCycle;
 
-extern volatile unsigned char UART_Receive_Flag, EndTimer_Flag, Timer_Half_1s_Flag,
+extern unsigned char UART_Receive_Flag, EndTimer_Flag, Timer_Half_1s_Flag,
 						Timer_1s_Flag, Timer_DeliSecond_Flag, Timer_CentiSecond_Flag, Timer_MiliSecond_Flag, Timer_1minute_Flag;
 
 /* USER CODE END 0 */
@@ -118,6 +118,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
+  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -752,11 +753,11 @@ static void MX_TIM5_Init(void)
  */
   /* USER CODE END TIM5_Init 1 */
   htim5.Instance = TIM5;
-  htim5.Init.Prescaler = 375-1;
+  htim5.Init.Prescaler = 1;
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim5.Init.Period = 550-1;
+  htim5.Init.Period = 20400-1;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
   {
     Error_Handler();
@@ -777,7 +778,7 @@ static void MX_TIM5_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 550/2-1;
+  sConfigOC.Pulse = 4080-1;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
@@ -870,12 +871,12 @@ TIM8_CH1 ----> PeristalticPumpPWM2
 
   /* USER CODE END TIM8_Init 1 */
   htim8.Instance = TIM8;
-  htim8.Init.Prescaler = 375-1;
+  htim8.Init.Prescaler = 0;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim8.Init.Period = 550-1;
+  htim8.Init.Period = 40800-1;
   htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim8.Init.RepetitionCounter = 0;
-  htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim8) != HAL_OK)
   {
     Error_Handler();
@@ -896,7 +897,7 @@ TIM8_CH1 ----> PeristalticPumpPWM2
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 550/2-1;
+  sConfigOC.Pulse = 8160-1;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -1036,7 +1037,6 @@ static void MX_USART3_UART_Init(void)
   */
 static void MX_DMA_Init(void) 
 {
-
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
 

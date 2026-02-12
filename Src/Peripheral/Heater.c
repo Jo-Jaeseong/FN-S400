@@ -7,11 +7,10 @@
 #include "main.h"
 #include "define.h"
 #include "i2c.h"
-#include "process.h"
 #include "main.h"
 
 extern float fModuleTemperature, fModuleHumidity;
-extern struct DeviceInfo_format DeviceInfo;
+extern float LowerTemperature, UpperTemperature;
 
 void TurnOnHeater()
 {
@@ -23,15 +22,15 @@ void TurnOffHeater()
 	HAL_GPIO_WritePin(HeaterOnOff1_GPIO_Port, HeaterOnOff1_Pin, GPIO_PIN_RESET);
 }
 
-void AdjustHeaterControl(int addtemp)
+void AdjustHeaterControl(int channel)
 {
 //	GetTemperatureFan(channel);
 
-	if (fModuleTemperature > (DeviceInfo.upper_temperature+addtemp))
+	if (fModuleTemperature > UpperTemperature)
 	{
 		TurnOffHeater();
 	}
-	else if (fModuleTemperature < (DeviceInfo.lower_temperature+addtemp))
+	else if (fModuleTemperature < LowerTemperature)
 	{
 		TurnOnHeater();
 	}

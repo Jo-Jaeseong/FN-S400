@@ -27,7 +27,7 @@ void InitDisplayValues(void);
 void DisplayStatus();
 
 void InitLCDTimes();
-void DisplayTime(int page, int index, unsigned int icentisecond);
+void DisplayTime(int index, unsigned int icentisecond);
 void DisplayPreHeatTime();
 void DisplaySprayTime();
 void DisplaySterileTime();
@@ -69,11 +69,11 @@ void DisplayRESERVEATOINOnoffIcon();
 
 void DisplayScrubPopUp(void);
 void DisplayVersion(char ch1, char ch2, char ch3);
-void DisplayPopUpMessage(char *msg);
+void DisplayErrorMessage(char *msg);
 void DisplayMsg(char *msg);
 
 void DisplayTestValue(void);
-void DisplayDebug(char *msg);
+void DisplayDebug(char ch1, char ch2);
 
 void ReadRTC(unsigned char *year, unsigned char *month, unsigned char *day, unsigned char *week,
 				unsigned char *hour, unsigned char *minute, unsigned char *second);
@@ -159,28 +159,5 @@ void DisplayPageValue(int page ,int index, int value);
 void DisplaySelectIcon(int page, int index, int value);
 void LCD_31(int index, int value);
 void Display31page();
-
-//2023.06.29
-void DisplaySolutionCheckPopUp(char *msg);
-
-//문자 출력
-void DisplayPage4Char(int page ,int index, char *msg);
-void DisplayPage8Char(int page ,int index, char *msg);
-void DisplayPage10Char(int page ,int index, char *msg);
-
-void LCD_06(int index, int value);
-void LCD_07(int index, int value);
-void Display06page();
-void LCD_51(int index, int value);
-void LCD_52(int index, int value);
-void LCD_53(int index, int value);
-void LCD_54(int index, int value);
-void LCD_55(int index, int value);
-void LCD_56(int index, int value);
-void Display51page();
-void Display52page();
-void Display53page();
-void Display54page();
-void Display55page();
 
 #endif /* PERIPHERAL_LCD_H_ */

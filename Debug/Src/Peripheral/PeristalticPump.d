@@ -37,7 +37,7 @@ Src/Peripheral/PeristalticPump.o: ../Src/Peripheral/PeristalticPump.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_hcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
- ../Src/Peripheral/define.h ../Src/Peripheral/process.h
+ ../Src/Peripheral/define.h ../Src/Peripheral/Process.h
 
 ../Inc/main.h:
 
@@ -119,4 +119,4 @@ Src/Peripheral/PeristalticPump.o: ../Src/Peripheral/PeristalticPump.c \
 
 ../Src/Peripheral/define.h:
 
-../Src/Peripheral/process.h:
+../Src/Peripheral/Process.h:

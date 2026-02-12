@@ -1,4 +1,4 @@
-Src/Peripheral/process.o: ../Src/Peripheral/process.c ../Inc/main.h \
+Src/Peripheral/Process.o: ../Src/Peripheral/Process.c ../Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -38,13 +38,13 @@ Src/Peripheral/process.o: ../Src/Peripheral/process.c ../Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_hcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Src/Peripheral/define.h ../Src/Peripheral/lcd.h \
- ../Src/Peripheral/i2c.h ../Src/Peripheral/flash.h \
- ../Src/Peripheral/adc.h ../Src/Peripheral/AirPump.h \
- ../Src/Peripheral/FanPump.h ../Src/Peripheral/Heater.h \
+ ../Src/Peripheral/i2c.h ../Src/Peripheral/adc.h \
+ ../Src/Peripheral/AirPump.h ../Src/Peripheral/FanPump.h \
+ ../Src/Peripheral/flash.h ../Src/Peripheral/Heater.h \
  ../Src/Peripheral/PeristalticPump.h ../Src/Peripheral/Solenoid.h \
- ../Src/Peripheral/Scrubber.h ../Src/Peripheral/LTE_modem.h \
- ../Src/Peripheral/rfid.h ../Src/Peripheral/util.h \
- ../Src/Peripheral/process.h ../Src/Peripheral/USBProcess.h
+ ../Src/Peripheral/LTE_modem.h ../Src/Peripheral/rfid.h \
+ ../Src/Peripheral/util.h ../Src/Peripheral/Process.h \
+ ../Src/Peripheral/USBProcess.h ../Src/Peripheral/Scrubber.h
 
 ../Inc/main.h:
 
@@ -130,13 +130,13 @@ Src/Peripheral/process.o: ../Src/Peripheral/process.c ../Inc/main.h \
 
 ../Src/Peripheral/i2c.h:
 
-../Src/Peripheral/flash.h:
-
 ../Src/Peripheral/adc.h:
 
 ../Src/Peripheral/AirPump.h:
 
 ../Src/Peripheral/FanPump.h:
+
+../Src/Peripheral/flash.h:
 
 ../Src/Peripheral/Heater.h:
 
@@ -144,14 +144,14 @@ Src/Peripheral/process.o: ../Src/Peripheral/process.c ../Inc/main.h \
 
 ../Src/Peripheral/Solenoid.h:
 
-../Src/Peripheral/Scrubber.h:
-
 ../Src/Peripheral/LTE_modem.h:
 
 ../Src/Peripheral/rfid.h:
 
 ../Src/Peripheral/util.h:
 
-../Src/Peripheral/process.h:
+../Src/Peripheral/Process.h:
 
 ../Src/Peripheral/USBProcess.h:
+
+../Src/Peripheral/Scrubber.h:

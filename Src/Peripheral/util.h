@@ -8,8 +8,8 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
-int Calc_RunningTime(float Cubic, int perCubic, int perMinute);
-int Calc_Usage(int iTime, int perCubic, int perMinute);
+int Calc_RunningTime(float iSize);
+int Calc_Usage(int iTime);
 
 unsigned char hex2bcd (unsigned char x);
 float char2float(const unsigned char *data);

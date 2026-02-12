@@ -37,8 +37,7 @@ Src/Peripheral/Heater.o: ../Src/Peripheral/Heater.c ../Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_hcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
- ../Src/Peripheral/define.h ../Src/Peripheral/i2c.h \
- ../Src/Peripheral/process.h
+ ../Src/Peripheral/define.h ../Src/Peripheral/i2c.h
 
 ../Inc/main.h:
 
@@ -121,5 +120,3 @@ Src/Peripheral/Heater.o: ../Src/Peripheral/Heater.c ../Inc/main.h \
 ../Src/Peripheral/define.h:
 
 ../Src/Peripheral/i2c.h:
-
-../Src/Peripheral/process.h:

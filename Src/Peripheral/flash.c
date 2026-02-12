@@ -12,7 +12,6 @@
 #include "rfid.h"
 #include "lcd.h"
 #include "flash.h"
-#include "string.h"
 
 __attribute__((__section__(".user_data"))) const char userConfig[1024];
 __attribute__((__section__(".user_log_data1"))) const char userLogData1[975];
@@ -24,9 +23,8 @@ extern int IndexEndLog;
 
 extern struct FLData		f_data[65];
 
-extern volatile unsigned char Running_Flag;
-extern float fInjectionPerMinute, fInjectionPerMinute2, fInjectionPerCubic;
-extern float  fCubic;
+extern unsigned char Running_Flag;
+extern float fInjectionPerMinute, fInjectionPerCubic, fCubic;
 
 extern int SMSonoff_Flag;
 extern int USBSECURITYonoff_Flag;
@@ -59,57 +57,58 @@ extern unsigned char szStartCommand[37],szStartCommandCBT[37];	//�Ǹ�ó ��
 //Float [1], float2char [4]
 
 // Flash 구성
-#define InjectionPerMinute_DATA			0 //[1]	int
-#define InjectionPerMinute2_DATA		1 //[1]	int
-#define InjectionPerCubic_DATA			2 //[1] 	int
-#define Cubic_DATA							8 //[4] float
+#define InjectionPerMinute_DATA			0 //[4]	float
+#define InjectionPerCubic_DATA			4 //[4] float
+#define Cubic_DATA						8 //[4] float
 
-#define IndexEndLog_DATA					12 //[1] int
+#define IndexEndLog_DATA				12 //[1] int
 #define SMSonoff_Flag_DATA				13 //[1] int
-#define USBSECURITYonoff_Flag_DATA	14 //[1] int
+#define USBSECURITYonoff_Flag_DATA		14 //[1] int
 #define BeforeRFID_DATA					15 //[1] int
 
 #define user_number1_DATA				16 //[4] char[4]
 #define user_number2_DATA				20 //[4] char[4]
 
-#define device_version_DATA				24 //[1] int
-#define Serial_Year_DATA					25 //[1] char
-#define Serial_Month_DATA					26 //[1] char
-#define Serial_Num1_DATA					27 //[1] char
-#define Serial_Num2_DATA					28 //[1] char
+#define Device_Version_DATA				24 //[1] int
+#define Serial_Year_DATA				25 //[1] char
+#define Serial_Month_DATA				26 //[1] char
+#define Serial_Num1_DATA				27 //[1] char
+#define Serial_Num2_DATA				28 //[1] char
 
-#define modem_number1_DATA			29 //[4] char[4]
-#define modem_number2_DATA			33 //[4] char[4]
+#define Modem_number1_DATA				29 //[4] char[4]
+#define Modem_number2_DATA				33 //[4] char[4]
 
-#define RFIDValue_DATA						45 //[20] char[4] * 5
+
+
+#define RFIDValue_DATA					45 //[20] char[4] * 5
 
 #define RFIDVolume_DATA					65 //[20] float * 5
-#define RFIDYear_DATA						85 //[5] char * 5
-#define RFIDMonth_DATA						90 //[5] char * 5
+#define RFIDYear_DATA					85 //[5] char * 5
+#define RFIDMonth_DATA					90 //[5] char * 5
+
+
 
 #define AccountPassword_DATA			155 //[20]
 #define AccountLastLogin_DATA			175 //[25]
 #define AccountAttempts_DATA			200 //[5]
 #define AccountStatus_DATA				205 //[5]
 
-#define loginonoff_flag_DATA				210 //[1] int
-#define reservationonoff_flag_DATA		211 //[1] int
+#define LoginOnoff_Flag_DATA				210 //[1] int
+#define ReservationOnoff_Flag_DATA	211 //[1] int
 
-#define peri1_speed_DATA					220	//[1] int
-#define peri2_speed_DATA					221	//[1] int
-#define fan_high_speed_DATA				222	//[1] int
-#define fan_low_speed_DATA				223	//[1] int
-
-#define lower_temperature_DATA		224	//[4] float
-#define upper_temperature_DATA		228	//[4] float
-#define overhear_temp_DATA				232	//[4] float
-
-#define preheat_time_DATA					236	//[1] int
-#define line_clean_time_DATA				237	//[1] int
-#define nozzle_clean_time_DATA			238	//[1] int
-#define sterile_time_DATA					239	//[1] int
+#define Peri1_15_Value_DATA				220 //[4] float
+#define Peri2_15_Value_DATA				225	//[4] float
+#define Peri1_12_Value_DATA				230 //[4] float
+#define Peri2_12_Value_DATA				235	//[4] float
+#define Peri1_9_Value_DATA				240 //[4] float
+#define Peri2_9_Value_DATA				245	//[4] float
 
 #define LOG_DATA								250	//[56]
+
+/*
+#define Peri_Value1_DATA				37 //[4] float
+#define Peri_Value2_DATA				41 //[4] float
+*/
 
 void Reset_Setting_Flash(){
 	if(Running_Flag==0){
@@ -117,15 +116,10 @@ void Reset_Setting_Flash(){
 	}
 
 	unsigned char ucData[1024];
-	memset(ucData, 0, 400);
-	ucData[InjectionPerMinute_DATA]=fInjectionPerMinute;
-	ucData[InjectionPerMinute2_DATA]=fInjectionPerMinute2;
-	ucData[InjectionPerCubic_DATA]=fInjectionPerCubic;
-	float2char(ConstantCubic, ucData + Cubic_DATA);
-
-	//float2char(ConstantInjectionPerMinute, ucData+InjectionPerMinute_DATA);
-    //float2char(ConstantInjectionPerCubic, ucData + InjectionPerCubic_DATA);
-    //float2char(ConstantCubic, ucData + Cubic_DATA);
+	memset(ucData, 0, 300);
+	float2char(ConstantInjectionPerMinute, ucData+InjectionPerMinute_DATA);
+    float2char(ConstantInjectionPerCubic, ucData + InjectionPerCubic_DATA);
+    float2char(ConstantCubic, ucData + Cubic_DATA);
 
 
 	//설정 세팅값 저장
@@ -201,7 +195,7 @@ void Reset_Setting_Flash(){
 	*/
 
 
-	ucData[device_version_DATA]=DeviceInfo.device_version;
+	ucData[Device_Version_DATA]=DeviceInfo.Device_Version;
 
 	ucData[Serial_Year_DATA]=DeviceInfo.year;
 	ucData[Serial_Month_DATA]=DeviceInfo.month;
@@ -209,26 +203,21 @@ void Reset_Setting_Flash(){
 	ucData[Serial_Num2_DATA]=DeviceInfo.Serial2;
 
 	for(int i=0;i<4;i++){
-		ucData[modem_number1_DATA+i]=DeviceInfo.modem_number1[i];
-		ucData[modem_number2_DATA+i]=DeviceInfo.modem_number2[i];
+		ucData[Modem_number1_DATA+i]=DeviceInfo.Modem_number1[i];
+		ucData[Modem_number2_DATA+i]=DeviceInfo.Modem_number2[i];
 	}
+	float2char(DeviceInfo.Peri1_15_Value, ucData+Peri1_15_Value_DATA);
+	float2char(DeviceInfo.Peri2_15_Value, ucData+Peri2_15_Value_DATA);
+	float2char(DeviceInfo.Peri1_12_Value, ucData+Peri1_12_Value_DATA);
+	float2char(DeviceInfo.Peri2_12_Value, ucData+Peri2_12_Value_DATA);
+	float2char(DeviceInfo.Peri1_9_Value, ucData+Peri1_9_Value_DATA);
+	float2char(DeviceInfo.Peri2_9_Value, ucData+Peri2_9_Value_DATA);
 
-	ucData[peri1_speed_DATA]=DeviceInfo.peri1_speed;
-	ucData[peri2_speed_DATA]=DeviceInfo.peri2_speed;
-	ucData[fan_high_speed_DATA]=DeviceInfo.fan_high_speed;
-	ucData[fan_low_speed_DATA]=DeviceInfo.fan_low_speed;
 
-	float2char(DeviceInfo.lower_temperature, ucData+lower_temperature_DATA);
-	float2char(DeviceInfo.upper_temperature, ucData+upper_temperature_DATA);
-	float2char(DeviceInfo.overheat_temperature, ucData+overhear_temp_DATA);
 
-	ucData[preheat_time_DATA]=DeviceInfo.PreHeatTime;
-	ucData[line_clean_time_DATA]=DeviceInfo.LineCleanTime;
-	ucData[nozzle_clean_time_DATA]=DeviceInfo.NozzleCleanTime;
-	ucData[sterile_time_DATA]=DeviceInfo.SterileTime;
 
-	ucData[loginonoff_flag_DATA]=DeviceInfo.loginonoff_flag;
-	ucData[reservationonoff_flag_DATA]=DeviceInfo.reservationonoff_flag;
+	ucData[LoginOnoff_Flag_DATA]=DeviceInfo.Loginonoff_flag;
+	ucData[ReservationOnoff_Flag_DATA]=DeviceInfo.Reservationonoff_flag;
 	//ucData[Peri_Value_DATA]=DeviceInfo.PeriValue;
 
 	//히스토리 정보 저장
@@ -268,15 +257,15 @@ void Reset_Setting_Flash(){
 
 void Reset_All_Flash(){
 	unsigned char ucData[1024];
-	memset(ucData, 0, 400);
-	ucData[InjectionPerMinute_DATA]=ConstantInjectionPerMinute;
-	ucData[InjectionPerMinute2_DATA]=ConstantInjectionPerMinute2;
-	ucData[InjectionPerCubic_DATA]=ConstantInjectionPerCubic;
+	memset(ucData, 0, 300);
+	float2char(ConstantInjectionPerMinute, ucData+InjectionPerMinute_DATA);
+    float2char(ConstantInjectionPerCubic, ucData + InjectionPerCubic_DATA);
 
-    ucData[device_version_DATA]=DeviceInfo.device_version;
 
     SMSonoff_Flag=0;
 	USBSECURITYonoff_Flag=0;
+
+
 
 	for(int i=0;i<4;i++){
 		szStartCommand[24+i]='0';
@@ -303,14 +292,11 @@ void Write_Flash(){
 	}
 
 	unsigned char ucData[1024];
-	memset(ucData, 0, 400);
-	ucData[InjectionPerMinute_DATA]=fInjectionPerMinute;
-	ucData[InjectionPerMinute2_DATA]=fInjectionPerMinute2;
-	ucData[InjectionPerCubic_DATA]=fInjectionPerCubic;
+	memset(ucData, 0, 300);
+	float2char(fInjectionPerMinute, ucData+InjectionPerMinute_DATA);
 
-	//float2char(fInjectionPerMinute, ucData+InjectionPerMinute_DATA);
-    //float2char(fInjectionPerCubic, ucData + InjectionPerCubic_DATA);
-
+	//fInjectionPerCubic=roundf(fInjectionPerCubic * 100) / 100; // 큐빅당 분사량 조절 float 값 보정
+    float2char(fInjectionPerCubic, ucData + InjectionPerCubic_DATA);
     float2char(fCubic, ucData + Cubic_DATA);
 
     //설정 저장
@@ -380,7 +366,7 @@ void Write_Flash(){
 	}
 
 
-	ucData[device_version_DATA]=DeviceInfo.device_version;
+	ucData[Device_Version_DATA]=DeviceInfo.Device_Version;
 
 	ucData[Serial_Year_DATA]=DeviceInfo.year;
 	ucData[Serial_Month_DATA]=DeviceInfo.month;
@@ -388,26 +374,17 @@ void Write_Flash(){
 	ucData[Serial_Num2_DATA]=DeviceInfo.Serial2;
 
 	for(int i=0;i<4;i++){
-		ucData[modem_number1_DATA+i]=DeviceInfo.modem_number1[i];
-		ucData[modem_number2_DATA+i]=DeviceInfo.modem_number2[i];
+		ucData[Modem_number1_DATA+i]=DeviceInfo.Modem_number1[i];
+		ucData[Modem_number2_DATA+i]=DeviceInfo.Modem_number2[i];
 	}
-
-	ucData[peri1_speed_DATA]=DeviceInfo.peri1_speed;
-	ucData[peri2_speed_DATA]=DeviceInfo.peri2_speed;
-	ucData[fan_high_speed_DATA]=DeviceInfo.fan_high_speed;
-	ucData[fan_low_speed_DATA]=DeviceInfo.fan_low_speed;
-
-	float2char(DeviceInfo.lower_temperature, ucData+lower_temperature_DATA);
-	float2char(DeviceInfo.upper_temperature, ucData+upper_temperature_DATA);
-	float2char(DeviceInfo.overheat_temperature, ucData+overhear_temp_DATA);
-
-	ucData[preheat_time_DATA]=DeviceInfo.PreHeatTime;
-	ucData[line_clean_time_DATA]=DeviceInfo.LineCleanTime;
-	ucData[nozzle_clean_time_DATA]=DeviceInfo.NozzleCleanTime;
-	ucData[sterile_time_DATA]=DeviceInfo.SterileTime;
-
-    ucData[loginonoff_flag_DATA]=DeviceInfo.loginonoff_flag;
-    ucData[reservationonoff_flag_DATA]=DeviceInfo.reservationonoff_flag;
+	float2char(DeviceInfo.Peri1_15_Value, ucData+Peri1_15_Value_DATA);
+	float2char(DeviceInfo.Peri2_15_Value, ucData+Peri2_15_Value_DATA);
+	float2char(DeviceInfo.Peri1_12_Value, ucData+Peri1_12_Value_DATA);
+	float2char(DeviceInfo.Peri2_12_Value, ucData+Peri2_12_Value_DATA);
+	float2char(DeviceInfo.Peri1_9_Value, ucData+Peri1_9_Value_DATA);
+	float2char(DeviceInfo.Peri2_9_Value, ucData+Peri2_9_Value_DATA);
+    ucData[LoginOnoff_Flag_DATA]=DeviceInfo.Loginonoff_flag;
+    ucData[ReservationOnoff_Flag_DATA]=DeviceInfo.Reservationonoff_flag;
 	//ucData[Peri_Value_DATA]=DeviceInfo.PeriValue;
 
 
@@ -454,27 +431,15 @@ void Write_Flash(){
 }
 
 void Read_Flash(){
-	/*
 	fInjectionPerMinute = char2float((unsigned char *)userConfig+InjectionPerMinute_DATA);
 	if(fInjectionPerMinute == 0) {
 		fInjectionPerMinute = ConstantInjectionPerMinute;
 	}
+
+	//fInjectionPerCubic = roundf((char2float((unsigned char *)(userConfig + 4)))* 100) / 100; // 큐빅당 분사량 조절 float 값 보정
 	fInjectionPerCubic=char2float((unsigned char *)(userConfig + InjectionPerCubic_DATA));
 	if(fInjectionPerCubic == 0 || userConfig[4] == 0xff) {
 		fInjectionPerCubic = ConstantInjectionPerCubic;
-	}
-	*/
-	fInjectionPerMinute=userConfig[InjectionPerMinute_DATA];
-	if(fInjectionPerMinute==0){
-		fInjectionPerMinute=ConstantInjectionPerMinute;
-	}
-	fInjectionPerMinute2=userConfig[InjectionPerMinute2_DATA];
-	if(fInjectionPerMinute2==0){
-		fInjectionPerMinute2=ConstantInjectionPerMinute2;
-	}
-	fInjectionPerCubic=userConfig[InjectionPerCubic_DATA];
-	if(fInjectionPerCubic==0){
-		fInjectionPerCubic=ConstantInjectionPerCubic;
 	}
 
 	fCubic = char2float((unsigned char *)(userConfig + Cubic_DATA));
@@ -517,9 +482,9 @@ void Read_Flash(){
 	}
 
 	//디바이스 정보 불러오기
-	DeviceInfo.device_version=userConfig[device_version_DATA];
-	if(DeviceInfo.device_version==0){
-		DeviceInfo.device_version=1;
+	DeviceInfo.Device_Version=userConfig[Device_Version_DATA];
+	if(DeviceInfo.Device_Version==0){
+		DeviceInfo.Device_Version=1;
 	}
 	DeviceInfo.year=userConfig[Serial_Year_DATA];
 	DeviceInfo.month=userConfig[Serial_Month_DATA];
@@ -527,69 +492,38 @@ void Read_Flash(){
 	DeviceInfo.Serial2=userConfig[Serial_Num2_DATA];
 
 	for(int i=0;i<4;i++){
-		DeviceInfo.modem_number1[i]=userConfig[modem_number1_DATA+i];
-		DeviceInfo.modem_number2[i]=userConfig[modem_number2_DATA+i];
+		DeviceInfo.Modem_number1[i]=userConfig[Modem_number1_DATA+i];
+		DeviceInfo.Modem_number2[i]=userConfig[Modem_number2_DATA+i];
 	}
 
-	DeviceInfo.peri1_speed=userConfig[peri1_speed_DATA];
-	DeviceInfo.peri2_speed=userConfig[peri2_speed_DATA];
-
-	if(DeviceInfo.peri1_speed==0){
-		DeviceInfo.peri1_speed=100;
+	DeviceInfo.Peri1_15_Value = char2float((unsigned char *)userConfig+Peri1_15_Value_DATA);
+	if(DeviceInfo.Peri1_15_Value==0){
+		DeviceInfo.Peri1_15_Value=ConstantPeristalticPump_15_PwmCycle;
 	}
-	if(DeviceInfo.peri2_speed==0){
-		DeviceInfo.peri2_speed=100;
-	}
-
-	DeviceInfo.fan_high_speed=userConfig[fan_high_speed_DATA];
-	DeviceInfo.fan_low_speed=userConfig[fan_low_speed_DATA];
-
-	if(DeviceInfo.fan_high_speed==0){
-		DeviceInfo.fan_high_speed=ConstantBlowerFanControlPwmMax;
-	}
-	if(DeviceInfo.fan_low_speed==0){
-		DeviceInfo.fan_low_speed=ConstantBlowerFanControlPwmMin;
+	DeviceInfo.Peri2_15_Value = char2float((unsigned char *)userConfig+Peri2_15_Value_DATA);
+	if(DeviceInfo.Peri2_15_Value==0){
+		DeviceInfo.Peri2_15_Value=ConstantPeristalticPump_15_PwmCycle;
 	}
 
-	DeviceInfo.lower_temperature=char2float((unsigned char *)(userConfig + lower_temperature_DATA));
-	DeviceInfo.upper_temperature=char2float((unsigned char *)(userConfig + upper_temperature_DATA));
-	DeviceInfo.overheat_temperature=char2float((unsigned char *)(userConfig + overhear_temp_DATA));
-
-	if(DeviceInfo.lower_temperature==0){
-		DeviceInfo.lower_temperature=ConstantLowerTemperature;
+	DeviceInfo.Peri1_12_Value = char2float((unsigned char *)userConfig+Peri1_12_Value_DATA);
+	if(DeviceInfo.Peri1_12_Value==0){
+		DeviceInfo.Peri1_12_Value=ConstantPeristalticPump_12_PwmCycle;
 	}
-	if(DeviceInfo.upper_temperature==0){
-		DeviceInfo.upper_temperature=ConstantUpperTemperature;
-	}
-	if(DeviceInfo.overheat_temperature==0){
-		DeviceInfo.overheat_temperature=OverHeat_Temperature;
+	DeviceInfo.Peri2_12_Value = char2float((unsigned char *)userConfig+Peri2_12_Value_DATA);
+	if(DeviceInfo.Peri2_12_Value==0){
+		DeviceInfo.Peri2_12_Value=ConstantPeristalticPump_12_PwmCycle;
 	}
 
-	DeviceInfo.PreHeatTime=userConfig[preheat_time_DATA];
-	DeviceInfo.LineCleanTime=userConfig[line_clean_time_DATA];
-	DeviceInfo.NozzleCleanTime=userConfig[nozzle_clean_time_DATA];
-	DeviceInfo.SterileTime=userConfig[sterile_time_DATA];
-
-	if(DeviceInfo.PreHeatTime==0){
-		DeviceInfo.PreHeatTime=ConstantPreHeatTime;
+	DeviceInfo.Peri1_9_Value = char2float((unsigned char *)userConfig+Peri1_9_Value_DATA);
+	if(DeviceInfo.Peri1_9_Value==0){
+		DeviceInfo.Peri1_9_Value=ConstantPeristalticPump_9_PwmCycle;
 	}
-	if(DeviceInfo.LineCleanTime==0){
-		DeviceInfo.LineCleanTime=ConstantLineCleanTime;
-	}
-	if(DeviceInfo.NozzleCleanTime==0){
-		DeviceInfo.NozzleCleanTime=ConstantNozzleCleanTime;
-	}
-	if(DeviceInfo.SterileTime==0){
-		DeviceInfo.SterileTime=ConstantSterileTime;
+	DeviceInfo.Peri2_9_Value = char2float((unsigned char *)userConfig+Peri2_9_Value_DATA);
+	if(DeviceInfo.Peri2_9_Value==0){
+		DeviceInfo.Peri2_9_Value=ConstantPeristalticPump_9_PwmCycle;
 	}
 
 
-	if(DeviceInfo.fan_high_speed==0){
-		DeviceInfo.fan_high_speed=ConstantBlowerFanControlPwmMax;
-	}
-	if(DeviceInfo.fan_low_speed==0){
-		DeviceInfo.fan_low_speed=ConstantBlowerFanControlPwmMin;
-	}
 
 
 	//패스워드 불러오기
@@ -626,14 +560,15 @@ void Read_Flash(){
 		startData.ID[i] = userConfig[LOG_DATA+13+((i-1)*14)];
 	}
 
-	DeviceInfo.loginonoff_flag=userConfig[loginonoff_flag_DATA];
-	DeviceInfo.reservationonoff_flag=userConfig[reservationonoff_flag_DATA];
+	DeviceInfo.Loginonoff_flag=userConfig[LoginOnoff_Flag_DATA];
+	DeviceInfo.Reservationonoff_flag=userConfig[ReservationOnoff_Flag_DATA];
 
 }
 
 void Write_LogData_Flash(){
 	int i;
 	unsigned char ucData2[975];
+	unsigned char ucData3[975];
 
 	//userLogData[4][650];
 	/*

@@ -9,40 +9,33 @@
 
 #include "lcd.h"
 #include "i2c.h"
-#include "flash.h"
-
 
 #include "adc.h"
 #include "AirPump.h"
 #include "FanPump.h"
+#include "flash.h"
 #include "Heater.h"
 #include "PeristalticPump.h"
 #include "Solenoid.h"
-#include "Scrubber.h"
 
 #include "LTE_modem.h"
 #include "rfid.h"
 
 #include "util.h"
 
-#include "process.h"
+#include "Process.h"
 #include "USBProcess.h"
-
-#define IO_ACTION_GAP_MS 3000U
-
-static uint32_t last_io_action_ms;
-static IoActionType last_io_action_type = IO_ACTION_NONE;
+#include "Scrubber.h"
 
 extern unsigned int uiWaitTime[5];		// 0 : Not Used, 1 : PreHeat, 2 : Spray, 3 : Sterile, 4 : Scrub
-extern volatile unsigned int uiFinishTime;
-extern volatile unsigned int uiTotalTime;
+extern unsigned int uiFinishTime;
+extern unsigned int uiTotalTime;
 
-extern volatile unsigned int	uiEndTimeCounter, ui1sCounter;
-extern volatile unsigned char Running_Flag, EndTimer_Flag, ProcessWait_Flag;
-extern unsigned char Temperature_Error_Flag, FanControl_Error_Flag;
+extern unsigned int	uiEndTimeCounter, ui1sCounter;
+extern unsigned char Running_Flag, EndTimer_Flag, Temperature_Error_Flag, FanControl_Error_Flag, ProcessWait_Flag;
 
 extern float fCubic;
-extern float fInjectionPerMinute,fInjectionPerMinute2;
+extern float fInjectionPerMinute;
 extern float fInjectionPerCubic;
 extern float fBoardTemperature;
 extern float fModuleTemperature;
@@ -59,8 +52,7 @@ int BeforeRFIDFlag=1;
 int SaveLastRFID;
 
 extern int checkret, overheatFlag;
-unsigned char ProcessMode, SprayEnable_Flag, Sterile_Step, Heater_Flag;
-unsigned char Sms_Flag=0;
+unsigned char ProcessMode, SprayEnable_Flag, Sterile_Step, Sms_Flag, Heater_Flag;
 
 struct data_format	g_data[1500];
 int 				g_data_index;
@@ -82,19 +74,6 @@ struct data_format d_data;
 
 struct data_format hour6_data;
 struct data_format testdata;
-
-void EnforceIoActionGap(IoActionType action_type)
-{
-	uint32_t now = HAL_GetTick();
-	if (last_io_action_type != IO_ACTION_NONE && last_io_action_type != action_type) {
-		uint32_t elapsed = now - last_io_action_ms;
-		if (elapsed < IO_ACTION_GAP_MS) {
-			HAL_Delay(IO_ACTION_GAP_MS - elapsed);
-		}
-	}
-	last_io_action_ms = HAL_GetTick();
-	last_io_action_type = action_type;
-}
 
 struct data_format finish_data;
 
@@ -135,7 +114,7 @@ struct Account_format IDLIST;
 
 extern int H2O2Sensor_Flag;
 
-struct DeviceInfo_format DeviceInfo;
+extern struct DeviceInfo_format DeviceInfo;
 
 //23.06.01 Reservation
 extern unsigned int expected_uiFinishTime;
@@ -144,23 +123,17 @@ unsigned int uireservetime = 100;
 
 struct FLData	f_data[65];
 
-extern int Test_flag;
-extern volatile int Test_Start_flag;
-extern unsigned int TestTime;
-extern int Testfanspeed;
-
-
 void InitProcess(void){
 	//char msg[80] = "Loading";
-	//DisplayPopUpMessage(msg);
+	//DisplayErrorMessage(msg);
 	DisplayPage(42);	//Loading
 	DisplayModeIcon(0);
 
+	InitFanPump();
 	InitADC();
 	HAL_Delay(100);
 	InitRFID();
 	InitTemperature();
-	Read_Flash();
 	ret = ReadRFID();
 	if(ret==-2){//11.04추가
 		for(int i=0;i<3;i++){
@@ -170,10 +143,11 @@ void InitProcess(void){
 			}
 		}
 	}
+	Read_Flash();
 
 	RFIDCompare();	//06.16
 	RFIDDataLoad();
-	InitFanPump();
+
 	InitLCD();
 	InitLTEModem();
 
@@ -191,34 +165,16 @@ void InitProcess(void){
 
 void ReCalcTime(){
 	unsigned int uiRunningTime;
-	if(DeviceInfo.PreHeatTime==0){
-		DeviceInfo.PreHeatTime=ConstantPreHeatTime;
-	}
-	if(DeviceInfo.LineCleanTime==0){
-		DeviceInfo.LineCleanTime=ConstantLineCleanTime;
-	}
-	if(DeviceInfo.NozzleCleanTime==0){
-		DeviceInfo.NozzleCleanTime=ConstantNozzleCleanTime;
-	}
-	if(DeviceInfo.SterileTime==0){
-		DeviceInfo.SterileTime=ConstantSterileTime;
-	}
 
-
-	uiWaitTime[1] = DeviceInfo.PreHeatTime*60*100;		// PreHeatTime
+	uiWaitTime[1] = PreHeatCentiTime;		// PreHeatTime
 	uiWaitTime[2] = SprayCentiTime;		// Spray Time
-	uiWaitTime[3] = DeviceInfo.SterileTime*60*100;// Sterile Time
+	uiWaitTime[3] = SterileWaitCentiTime + SterileEndCentiTime + SterileMiddleCentiTime;// Sterile Time
 	if(uiScrubTime==0){
 		uiScrubTime=100;
 	}
 	uiWaitTime[4] = uiScrubTime;		// Scrub Time
 
-	if(DeviceInfo.device_version==8){
-		uiRunningTime = Calc_RunningTime(fCubic, fInjectionPerCubic, fInjectionPerMinute2);
-	}
-	else{
-		uiRunningTime = Calc_RunningTime(fCubic, fInjectionPerCubic, fInjectionPerMinute);
-	}
+	uiRunningTime = Calc_RunningTime(fCubic);
 	uiWaitTime[2] = uiRunningTime * 100;
 	expected_uiFinishTime= uireservetime + uiWaitTime[1] + uiWaitTime[2] + uiWaitTime[3] + uiWaitTime[4] + FinishCentiTime;	//해당부분 추가
 	uiFinishTime = uiWaitTime[2] + uiWaitTime[3] + uiWaitTime[4] + FinishCentiTime;
@@ -233,17 +189,20 @@ void ReCalcTime(){
 
 int H2O2Check(){
 	if (checkret == -2){
-			DisplayPopUpMessage("Must Use CBT Sterile H2O2.");
+			char msg[80] = "Must Use CBT Sterile H2O2.";
+			DisplayErrorMessage(msg);
 			DisplayModeIcon(0);
 			return 0;
 	}
 	else if(checkret == -3){
-		DisplayPopUpMessage("Cannot use old Sterile.");
+		char msg[80] = "Cannot use old Sterile.";
+		DisplayErrorMessage(msg);
 		DisplayModeIcon(0);
 		return 0;
 	}else{
 		if((RFIDData.fH2O2Volume) < fCubic * fInjectionPerCubic){
-			DisplayPopUpMessage("Cubic is bigger than remain. Input smaller value.");
+			char msg[80] = "Cubic is bigger than remain. Input smaller value.";
+			DisplayErrorMessage(msg);
 			DisplayModeIcon(0);
 			return 0;
 		}
@@ -266,10 +225,12 @@ void H2O2Read(){
 		}
 	}
 	if(ret==-2){
-		DisplayPopUpMessage("Please check H2O2");
+		char msg1[20] = "Please check H2O2";
+		DisplayErrorMessage(msg1);
 	}
 	else{
-		DisplayPopUpMessage("H2O2 changed");
+		char msg1[20] = "H2O2 changed";
+		DisplayErrorMessage(msg1);
 	}
 	Read_Flash();
 
@@ -313,7 +274,7 @@ void StartProcess(void){
 
 void EndProcess(void){
 	//char msg[80] = "Process Closing.";
-	//DisplayPopUpMessage(msg);
+	//DisplayErrorMessage(msg);
 	DisplayPage(42);	//Loading
 	SaveLog();				// Save Last Log.
 //	Write_Flash();
@@ -321,7 +282,7 @@ void EndProcess(void){
 
 	Running_Flag = 0;
 //	DownloadUSB();
-
+	PeristalticPumpOnOff_Flag = 0;
 	FinishTimeControl_Spary=0;
 	FirstOneMinute=1;
 	DisplayUsedVolume_flag=0;
@@ -333,7 +294,7 @@ void EndProcess(void){
 	SendEndMessage();
 	Write_Flash();
 	ProcessMode=0;
-
+	Sms_Flag=-1;
 	sms_enable=0;
 	PreHeatCnt=1;
 	FiveHourSMS=1;
@@ -342,19 +303,6 @@ void EndProcess(void){
 	CheckPPM6=1;
 	DisplayModeIcon(0);
 	DisplayOperationPage();
-	if(Sms_Flag==9){
-		DisplayPopUpMessage("Sterilization complete");
-	}
-	else{
-		DisplayPopUpMessage("The sterilizer has stopped");
-	}
-	if(PeristalticPumpOnOff_Flag==1){// 페리 동작 후 정지 되었을때.
-		DisplayPopUpMessage("The sterilizer has stopped.\n\r"
-			"Please turn off and on the sterilizer.");
-	}
-
-	PeristalticPumpOnOff_Flag = 0;
-	Sms_Flag=0;
 	InitDisplayValues();
 	FirstOneMinute=0;
 }
@@ -364,7 +312,7 @@ void CancelProcess(void){
 	TurnOffAirPump();
 	TurnOffSolenoidFluid();
 	TurnOffSolenoidAir();
-	SetFanPumpSpeedAllMid();
+	SetFanPumpSpeedAllMin2();
 	TurnOffPeristalticPump();
 	TurnOffScrubber();
 	Sms_Flag=6;
@@ -377,16 +325,20 @@ void CancelProcess(void){
 	Heater_Flag=0;
 	g_data_index = -1;
 	t_data_index = -1;
+	PeristalticPumpOnOff_Flag = 0;
 	iHourCounter=0;
 	iTenMinuteCounter=0;
 }
+
+extern int Test_flag,Test_Start_flag;
+extern unsigned int TestTime;
 
 void ProcessEndTimer(void){
 	if(Running_Flag) {
 		if(ProcessWait_Flag == 0) {
 			uiEndTimeCounter = 100;
 			if(PeristalticPumpOnOff_Flag){
-				ProcessWait_Flag = 1;
+			ProcessWait_Flag = 1;
 			}
 		}
 		else {
@@ -397,7 +349,6 @@ void ProcessEndTimer(void){
 			else if(ProcessMode == 5) {
 				ProcessMode = 0;
 				Sms_Flag=9;
-				PeristalticPumpOnOff_Flag=0;
 				EndProcess();
 			}
 			else if(ProcessMode == 4) {
@@ -406,7 +357,6 @@ void ProcessEndTimer(void){
 				// Finish Process
 				DisplayModeIcon(ProcessMode);
 				FinishProcess();
-				//PeristalticPumpOnOff_Flag = 0;
 				uiEndTimeCounter = uiFinishTime;
 			}
 			else if(ProcessMode == 3) {
@@ -414,12 +364,12 @@ void ProcessEndTimer(void){
 				if(Sterile_Step == 0) {
 					Sterile_Step = 1;
 					SterileMiddleProcess();
-					uiEndTimeCounter = DeviceInfo.NozzleCleanTime*60*100;
+					uiEndTimeCounter = SterileMiddleCentiTime;
 				}
 				else if(Sterile_Step == 1) {
 					Sterile_Step = 2;
 					SterileEndProcess();
-					uiEndTimeCounter = DeviceInfo.SterileTime*60*100- DeviceInfo.LineCleanTime*60*100-DeviceInfo.NozzleCleanTime*60*100;
+					uiEndTimeCounter = SterileEndCentiTime;
 				}
 				else if(Sterile_Step == 2) {
 					ScrubProcess();
@@ -437,7 +387,7 @@ void ProcessEndTimer(void){
 				DisplayModeIcon(ProcessMode);
 				SterileProcess();
 				//uiEndTimeCounter = uiWaitTime[ProcessMode];
-				uiEndTimeCounter = DeviceInfo.LineCleanTime*60*100;
+				uiEndTimeCounter = SterileWaitCentiTime;
 			}
 			else if(ProcessMode == 1 ) {
 				SprayProcess();
@@ -476,6 +426,12 @@ void ProcessTestEndTimer(void){
 				Test_flag=9;
 				uiEndTimeCounter=TIME_SOL_TEST;
 			}
+			else if(Test_flag == 4) {	//PeristalticPump Test
+				PeristalticSpeed();
+				TurnOnPeristalticPump();
+				Test_flag=9;
+				uiEndTimeCounter=TIME_PERI_TEST;
+			}
 			else if(Test_flag == 6) {	//Spray Test1
 				TurnOnFanPump();
 				TurnOnHeater();
@@ -499,7 +455,7 @@ void ProcessTestEndTimer(void){
 				PeristalticSpeed();
 				//SetFanPumpSpeedAllMin2();
 				SetFanPumpSpeedAll(60);
-				Test_flag=11;
+				Test_flag=9;
 				uiEndTimeCounter=TIME_SPRAY2_TEST;
 			}
 
@@ -525,7 +481,7 @@ void ProcessTestEndTimer(void){
 				TurnOffPeristalticPump();
 				//SetFanPumpSpeedAllMin2();
 				SetFanPumpSpeedAll(60);
-				Test_flag=11;
+				Test_flag=9;
 				uiEndTimeCounter=TIME_CLEAN2;
 			}
 
@@ -540,16 +496,30 @@ void ProcessTestEndTimer(void){
 				SetFanPumpSpeedAll(30);
 				TurnOffPeristalticPump();
 				TurnOffScrubber();
-				DisplayMsg("Test Complete");
 				DisplayTestComplete();
 			}
-			else if(Test_flag == 4) {	//PeristalticPump Test
-				PeristalticSpeed();
+
+			else if(Test_flag == 16) {	//PeristalticPump Test
+				Peri_15_Speed();
 				TurnOnPeristalticPump();
-				Test_flag=11;
+				Test_flag=20;
 				uiEndTimeCounter=TIME_PERI_TEST;
 			}
-			else if(Test_flag == 11) {	//PeristalticPump Test
+			else if(Test_flag == 17) {	//PeristalticPump Test
+				Peri_12_Speed();
+				TurnOnPeristalticPump();
+				Test_flag=20;
+				uiEndTimeCounter=TIME_PERI_TEST;
+			}
+			else if(Test_flag == 18) {	//PeristalticPump Test
+				Peri_9_Speed();
+				TurnOnPeristalticPump();
+				Test_flag=20;
+				uiEndTimeCounter=TIME_PERI_TEST;
+			}
+
+
+			else if(Test_flag == 20) {	//Develop Mode Peri_finish
 				Test_Start_flag=0;
 				TurnOffFanPump();
 				TurnOffHeater();
@@ -560,50 +530,8 @@ void ProcessTestEndTimer(void){
 				SetFanPumpSpeedAll(30);
 				TurnOffPeristalticPump();
 				TurnOffScrubber();
-				DisplayMsg("Test complete.\n\r"
-						"Please turn off and on the device.");
-				DisplayTestComplete();
-			}
 
-			else if(Test_flag == 16) {	//PeristalticPump Test
-				Peri_15_Speed();
-				TurnOnPeristalticPump();
-				Test_flag=20;
-				uiEndTimeCounter=TestTime;
-			}
-			else if(Test_flag == 17) {	//PeristalticPump Test
-				Peri_12_Speed();
-				TurnOnPeristalticPump();
-				Test_flag=20;
-				uiEndTimeCounter=TestTime;
-			}
-			else if(Test_flag == 18) {	//PeristalticPump Test
-				Peri_9_Speed();
-				TurnOnPeristalticPump();
-				Test_flag=20;
-				uiEndTimeCounter=TestTime;
-			}
-			else if(Test_flag == 20) {	//Develop Mode Peri_finish
-				Test_Start_flag=0;
-				TurnOffFanPump();
-				TurnOffPeristalticPump();
-				//테스트 완료 페이지 추가
-				DisplayMsg("Test complete.\n\r"
-						"Please turn off and on the device.");
-				Display55page();
-			}
-			else if(Test_flag== 21){	//Fan Test
-				TurnOnFanPump();
-				SetFanPumpSpeedAll(Testfanspeed);
-				Test_flag=22;
-				uiEndTimeCounter=TestTime;
-			}
-			else if(Test_flag == 22) {	//Fan Finish
-				Test_Start_flag=0;
-				TurnOffFanPump();
-				//테스트 완료 페이지 추가
-				DisplayMsg("Test complete.");
-				Display55page();
+				//테스트 완료 페이즈 추가
 			}
 
 
@@ -624,17 +552,18 @@ void DeliSecondProcess(void)
 	//GetTemperatureFan(0);
 	DisplayStatus();
 	GetDensity();
-	/*
+	if(Heater_Flag){
+		AdjustHeaterControl(0);
+	}
 	if(SprayEnable_Flag) {
 		AdjustBlowerFanControl(0);  // BlowerFanControlPwm1	fan 3�?모두
 	}
-	*/
 	/*여기
 	if(Clean_flag) {
 		AdjustBlowerFanControl(0);  // BlowerFanControlPwm1	fan 3�?모두
 	}
 	*/
-	if(fModuleTemperature>DeviceInfo.lower_temperature){
+	if(fModuleTemperature>ConstantStartTemperature){
 			PeristalticPumpOnOff_Flag = 1;
 	}
 
@@ -657,14 +586,8 @@ void OneSecondProcess(void)
 	DisplayStatus();
 	GetDensity();
 	if(DisplayUsedVolume_flag){
-		if(DeviceInfo.device_version==8){
-			RFIDData.fH2O2Volume -= (fInjectionPerMinute2/60);
-			nUsedVolume += (fInjectionPerMinute2/60);
-		}
-		else{
-			RFIDData.fH2O2Volume -= (fInjectionPerMinute/60);
-			nUsedVolume += (fInjectionPerMinute/60);
-		}
+		RFIDData.fH2O2Volume -= (fInjectionPerMinute/60);
+		nUsedVolume += (fInjectionPerMinute/60);
 	}
 	if(iFiveSecondCounter==4){
 		iFiveSecondCounter = 0;
@@ -692,14 +615,7 @@ void FiveSecondProcess(void){
 	DisplayAvgDensity();
 	avgOverHeatTemp();
 	DisplayH2O2SensorIcon(H2O2Sensor_Flag);
-
-	if(SprayEnable_Flag) {
-		AdjustBlowerFanControl(0);  // BlowerFanControlPwm1	fan 3�?모두
-		AdjustHeaterControl(10);
-	}
-	if(Heater_Flag){
-		AdjustBlowerFanControl(2);
-		AdjustHeaterControl(5);
+	if(Running_Flag){
 	}
 }
 
@@ -707,7 +623,6 @@ void SaveLog(void){
 	unsigned char week;
 	ReadRTC( &g_data[g_data_index].year, &g_data[g_data_index].month, &g_data[g_data_index].day, &week,
 			&g_data[g_data_index].hour, &g_data[g_data_index].minute, &g_data[g_data_index].second);
-	HAL_Delay(10);
 	g_data[g_data_index].temperature = fBoardTemperature;
 	g_data[g_data_index].humidity = fHumidity;
 	g_data[g_data_index].module_temperature = fModuleTemperature;
@@ -728,9 +643,7 @@ void SaveUsbLog(void){
 	t_data.density = fDensity;
 	t_data.volume = nUsedVolume;
 	t_data_index++;
-	if(t_data_index>=64){
-		t_data_index=64;
-	}
+
 	if(Running_Flag){
 		f_data[t_data_index].year=t_data.year;
 		f_data[t_data_index].month=t_data.month;;
@@ -742,9 +655,7 @@ void SaveUsbLog(void){
 		f_data[t_data_index].humidity = fHumidity;
 		f_data[t_data_index].density = fDensity;
 		f_data[t_data_index].volume = nUsedVolume;
-		DisplayDebug("USB_SAVE");
 		DownloadUSB();
-		DisplayDebug("");
 	}
 }
 
@@ -953,12 +864,10 @@ void OneMinuteProcess(void)
 		}
 	}
 	if(DisplayUsedVolume_flag){	//1분마다 log 저장
-		DisplayDebug("Saving..");
 		SaveActionLog();
 		SaveEndLogFlash(IndexEndLog);
 		Write_LogData_Flash();
 		Write_Flash();
-		DisplayDebug("");
 	}
 
 }
@@ -1009,10 +918,10 @@ void OneHourProcess(){
 		SaveLog();
 	}
 	if(OneHourSMS == 1){
-		if(iOneHourCounter>=0&&iOneHourCounter<=15){
+		if(iOneHourCounter>=0&&iOneHourCounter<=6){
 			iOneHourCounter++;
 			SavePPM(iOneHourCounter);
-			if(iOneHourCounter == 15){
+			if(iOneHourCounter == 6){
 				OneHourSMS=0;
 			}
 		}
@@ -1083,22 +992,11 @@ void SprayProcess(void){
 void SterileProcess(void)
 {
 //	HAL_Delay(10000);
-	float correctedUsedVolume = fCubic * fInjectionPerCubic;
-	float estimatedStartVolume = RFIDData.fH2O2Volume + nUsedVolume;
-	if(correctedUsedVolume < 0){
-		correctedUsedVolume = 0;
-	}
-	nUsedVolume = correctedUsedVolume;
-	RFIDData.fH2O2Volume = estimatedStartVolume - correctedUsedVolume;
-	if(RFIDData.fH2O2Volume < 0){
-		RFIDData.fH2O2Volume = 0;
-	}
-
 	SprayEnable_Flag = 0;
 	SaveLog();
 	TurnOnSolenoidFluid();
 //	SetFanPumpSpeedAllMax();
-	SetFanPumpSpeedAllMid();
+	SetFanPumpSpeedAllMin2();
 //	TurnOffHeater();
 	Heater_Flag = 1;
 	DisplayUsedVolume_flag=0;
@@ -1113,7 +1011,7 @@ void SterileMiddleProcess(void){
 }
 
 void SterileEndProcess(void){
-	SetFanPumpSpeedAllMid();
+	SetFanPumpSpeedAllMin2();
 	Heater_Flag=0;
 	TurnOffHeater();
 	TurnOffAirPump();
@@ -1338,7 +1236,7 @@ void SaveExpectFinishTime(){		//?�작??종료?�상?�간 메시지 ?�송
     SendFinishTime(smsHour, smsMinute);
 }
 
-void SaveReserveTime(){		//
+void SaveReserveTime(){		//?�작??종료?�상?�간 메시지 ?�송
 	unsigned char week;
 	ReadRTC(&Reserve_data.year, &Reserve_data.month, &Reserve_data.day, &week,
 			&Reserve_data.hour, &Reserve_data.minute, &Reserve_data.second);

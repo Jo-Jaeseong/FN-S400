@@ -1,7 +1,7 @@
-flash.c:114:6:Reset_Setting_Flash	1080	static
-flash.c:269:6:Reset_All_Flash	1048	static
-flash.c:300:6:Write_Flash	1088	static
-flash.c:456:6:Read_Flash	48	static
-flash.c:634:6:Write_LogData_Flash	1000	static
-flash.c:714:6:Write_Shift_LogData_Flash	1976	static
-flash.c:812:6:Read_LogData_Flash	32	static
+flash.c:113:6:Reset_Setting_Flash	1072	static
+flash.c:258:6:Reset_All_Flash	1048	static
+flash.c:289:6:Write_Flash	1080	static
+flash.c:433:6:Read_Flash	48	static
+flash.c:568:6:Write_LogData_Flash	1976	static
+flash.c:649:6:Write_Shift_LogData_Flash	1976	static
+flash.c:747:6:Read_LogData_Flash	32	static

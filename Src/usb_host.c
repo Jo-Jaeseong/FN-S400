@@ -116,12 +116,14 @@ static void USBH_UserProcess  (USBH_HandleTypeDef *phost, uint8_t id)
 //  Appli_state = APPLICATION_DISCONNECT;
   Appli_state = APPLICATION_IDLE;
   f_mount(NULL, (TCHAR const *)"", 0);
+  DisplayDebug(' ', ' ');
   USBConnect_Flag=0;
   DisplayUSBIcon(USBConnect_Flag);
   break;
 
   case HOST_USER_CLASS_ACTIVE:
   Appli_state = APPLICATION_READY;
+  DisplayDebug('A', 'R');
   USBConnect_Flag=1;
   DisplayUSBIcon(USBConnect_Flag);
   //Appli_state = APPLICATION_START;
@@ -130,6 +132,7 @@ static void USBH_UserProcess  (USBH_HandleTypeDef *phost, uint8_t id)
 
   case HOST_USER_CONNECTION:
   Appli_state = APPLICATION_START;
+  DisplayDebug('A', 'S');
   USBConnect_Flag=0;
   DisplayUSBIcon(USBConnect_Flag);
   break;

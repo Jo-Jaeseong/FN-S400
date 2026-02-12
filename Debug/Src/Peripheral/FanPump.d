@@ -1,5 +1,4 @@
-Src/Peripheral/FanPump.o: ../Src/Peripheral/FanPump.c \
- ../Src/Peripheral/process.h ../Inc/main.h \
+Src/Peripheral/FanPump.o: ../Src/Peripheral/FanPump.c ../Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -40,8 +39,6 @@ Src/Peripheral/FanPump.o: ../Src/Peripheral/FanPump.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Src/Peripheral/define.h ../Src/Peripheral/i2c.h \
  ../Src/Peripheral/FanPump.h
-
-../Src/Peripheral/process.h:
 
 ../Inc/main.h:
 

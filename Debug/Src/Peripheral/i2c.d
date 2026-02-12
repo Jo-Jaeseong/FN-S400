@@ -38,8 +38,8 @@ Src/Peripheral/i2c.o: ../Src/Peripheral/i2c.c ../Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_hcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Src/Peripheral/define.h ../Src/Peripheral/i2c.h \
- ../Src/Peripheral/process.h ../Src/Peripheral/lcd.h \
- ../Src/Peripheral/LTE_Modem.h ../Src/Peripheral/max6675.h
+ ../Src/Peripheral/Process.h ../Src/Peripheral/LTE_Modem.h \
+ ../Src/Peripheral/max6675.h
 
 ../Inc/main.h:
 
@@ -123,9 +123,7 @@ Src/Peripheral/i2c.o: ../Src/Peripheral/i2c.c ../Inc/main.h \
 
 ../Src/Peripheral/i2c.h:
 
-../Src/Peripheral/process.h:
-
-../Src/Peripheral/lcd.h:
+../Src/Peripheral/Process.h:
 
 ../Src/Peripheral/LTE_Modem.h:
 

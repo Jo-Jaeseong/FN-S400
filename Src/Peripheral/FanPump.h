@@ -11,16 +11,15 @@
 void InitFanPump(void);
 void TurnOnFanPump(void);
 void TurnOffFanPump(void);
-
-void SpeedUpFan();
-void SpeedDownFan();
-void SetPanSpeed(int iPercent);
+void SpeedUpFan(int channel);
+void SpeedDownFan(int channel);
+void SetPanSpeed(int channel, int iPercent);
 void SetFanPumpSpeedAllMin(void);
-void SetFanPumpSpeedAllMid(void);
+void SetFanPumpSpeedAllMin2(void);
 void SetFanPumpSpeedAllMax(void);
 void SetFanPumpSpeedAll(int percent);
 
 void ReadFanControl();
 
-void AdjustBlowerFanControl(int addtemp);
+void AdjustBlowerFanControl(int channel);
 #endif /* PERIPHERAL_FANPUMP_H_ */

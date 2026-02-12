@@ -13,21 +13,11 @@
 #include "util.h"
 #include "i2c.h"
 #include "rfid.h"
-#include "process.h"
+#include "Process.h"
 #include "USBProcess.h"
 #include "rfid.h"
 #include "lcd.h"
 #include "LTE_Modem.h"
-
-#include "flash.h"
-
-#include "adc.h"
-#include "AirPump.h"
-#include "FanPump.h"
-#include "Heater.h"
-#include "PeristalticPump.h"
-#include "Solenoid.h"
-#include "Scrubber.h"
 
 
 extern UART_HandleTypeDef huart1;
@@ -35,101 +25,86 @@ extern RTC_HandleTypeDef hrtc;
 
 extern unsigned char uart1_rx_data[20];
 unsigned char uart1_rx_data_2[100];
-extern volatile unsigned int  ui1sCounter;
-extern unsigned int g_data_index;//, g_data_serial_index;
-extern volatile unsigned char Running_Flag, UART_Receive_Flag;
-
-int PeristalticPumpCnt=0;
+extern unsigned int  ui1sCounter, g_data_index;//, g_data_serial_index;
+extern unsigned char Running_Flag, UART_Receive_Flag;
 
 //LCD page
 
-#define LCD_LOGIN_ON_FIRST 				2
-#define LCD_LOGIN_OFF_FIRST				70
+#define LCD_LOGIN_ON_FIRST 		2
+#define LCD_LOGIN_OFF_FIRST		70
 //#define LCD_FIRST    			2
-#define LCD_LOGIN_FIRST_PAGE				3
-#define LCD_LOGIN_SELECT_ID				4
-#define LCD_LOGIN_WRONG_PW				5
-#define LCD_SELECTED_ID						6
-#define LCD_INPUTED_PW						7
-#define LCD_SELECT_MENU					8
-#define LCD_SELECT_ERROR					9
+#define LCD_LOGIN_FIRST_PAGE	3
+#define LCD_LOGIN_SELECT_ID		4
+#define LCD_LOGIN_WRONG_PW		5
+#define LCD_LOGIN_BEFORE_PW		6
+#define LCD_LOGIN_AFTER_PW		7
+#define LCD_SELECT_MENU			8
+#define LCD_SELECT_ERROR		9
 
-#define LCD_OPERATTION_NORMAL			10
-#define LCD_OPERATTION_RUNNING			12
-#define LCD_OPERATTION_MESSAGE		13
+#define LCD_OPERATTION_NORMAL	10
+#define LCD_OPERATTION_RUNNING	12
+#define LCD_OPERATTION_MESSAGE	13
 
-#define LCD_USER_SETTING					16
-#define LCD_SUSER_SETTING					17
-#define LCD_ADMIN_SETTING					18
-#define LCD_LOGINOFF_SETTING				19
+#define LCD_USER_SETTING		16
+#define LCD_SUSER_SETTING		17
+#define LCD_ADMIN_SETTING		18
+#define LCD_LOGINOFF_SETTING	19
 
-#define SMS_SETTING_POPUP					20
-#define MOBILE_SETTING_POPUP			21
-#define USB_SETTING_POPUP					22
-#define RESET_SETTING_POPUP				23
+#define SMS_SETTING_POPUP		20
+#define MOBILE_SETTING_POPUP	21
+#define USB_SETTING_POPUP		22
+#define RESET_SETTING_POPUP		23
 
-#define CHANGE_PASSWORD1_POPUP		24
-#define CHANGE_PASSWORD2_POPUP		25
-#define CHANGE_PASSWORD3_POPUP		26
-#define CHANGE_PASSWORD4_POPUP		27
+#define CHANGE_PASSWORD1_POPUP	24
+#define CHANGE_PASSWORD2_POPUP	25
+#define CHANGE_PASSWORD3_POPUP	26
+#define CHANGE_PASSWORD4_POPUP	27
 
-#define ACCOUNT_SETTING						28
-#define ACCOUNT_POPUP1						29
-#define ACCOUNT_POPUP2						30
-#define HISTORY_PAGE							31
-#define H2O2_List									32
+#define ACCOUNT_SETTING			28
+#define ACCOUNT_POPUP1			29
+#define ACCOUNT_POPUP2			30
+#define HISTORY_PAGE				31
+#define H2O2_List				32
 
-#define LCD_MAINTENANCE_PAGE			35
-#define LCD_MAINTENANCE_YESNO			36
-#define LCD_MAINTENANCE_CONFIRM		37
-#define LCD_MAINTENANCE_TEST			38
+#define LCD_MAINTENANCE_PAGE	35
+#define LCD_MAINTENANCE_YESNO	36
+#define LCD_MAINTENANCE_CONFIRM	37
+#define LCD_MAINTENANCE_TEST	38
 
-#define Loading_PAGE							42
+#define LCD_USER1_BEFORE_PW		51
+#define LCD_USER2_BEFORE_PW		52
+#define LCD_USER3_BEFORE_PW		53
+#define LCD_SUPERUSER_BEFORE_PW	54
+#define LCD_ADMIN_BEFORE_PW		55
 
-#define LCD_DEVELOPER_PAGE				43
-#define CHANGE_device_version_PAGE		44
-#define SMS_SERVER_NOTICE_PAGE		45
-#define CHANGE_SERIAL_PAGE				46
-#define CHANGE_MODEM_PAGE				47
+#define LCD_USER1_AFTER_PW		61
+#define LCD_USER2_AFTER_PW		62
+#define LCD_USER3_AFTER_PW		63
+#define LCD_SUPERUSER_AFTER_PW	64
+#define LCD_ADMIN_AFTER_PW		65
 
-
-#define LOGIN_ONOFF_PAGE					50
-
-#define CHANGE_VALUE_PAGE					51
-#define PERI_TEST_PAGE						52
-#define FAN_TEST_PAGE							53
-#define TEST_YES_PAGE							54
-#define TEST_COMPLETE_PAGE				55
-#define SETTING_RESET_POPUP_PAGE		56
-
-
-
-#define LCD_LOGIN_OFF_WRONG_PW		71
-#define RESET_ALL_PAGE						72
-//#define CHANGE_PERI_TEST_YES_PAGE	73
+#define LCD_LOGIN_OFF_WRONG_PW	71
 #define RESERVATION_ONOFF_PAGE			74
-#define LCD_RESERVEPOPUP_PAGE     	75
-#define LCD_RESERVESETTING_PAGE   	76
-#define LCD_RESERVETIME_PAGE    		77
-#define LCD_SOLUTIONCHECK_PopUp		78
-
-
-//MAX VP : 0000~6FFF
+#define LCD_RESERVEPOPUP_PAGE     		75
+#define LCD_RESERVESETTING_PAGE   		76
+#define LCD_RESERVETIME_PAGE    			77
 
 
 
-#define ID0					0
-#define USER1				1
-#define USER2				2
-#define USER3				3
-#define SUPERUSER		4
-#define ADMIN				5
+
+#define ID0			0
+#define USER1		1
+#define USER2		2
+#define USER3		3
+#define SUPERUSER	4
+#define ADMIN		5
 #define MAINTENANCE	6
-#define DEVLOPER			7
+#define DEVLOPER	7
 
 unsigned char start_page[7] = {0x5A, 0xA5, 0x04, 0x80, 0x03, 0x00, 0x02};
 unsigned char   main_page[7] = {0x5A, 0xA5, 0x04, 0x80, 0x03, 0x00, 0x0a};
 
+unsigned char   time_display[9] = {0x5A, 0xA5, 0x06, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00};
 unsigned char   value_display[10] = {0x5A, 0xA5, 0x05, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 unsigned char   serial_display[17] = {0x5A, 0xA5, 0x0e, 0x82, 0x20, 0x41, 0x00, 0x00, 0x00};
@@ -143,6 +118,17 @@ const unsigned char rtc_setting[13] = {0x5A, 0xA5, 0x0a, 0x80, 0x1f, 0x5a, 0x19,
 const unsigned char rtc_date_get[6] = {0x5A, 0xA5, 0x03, 0x81, 0x20, 0x03};
 const unsigned char rtc_time_get[6] = {0x5A, 0xA5, 0x03, 0x81, 0x24, 0x03};
 
+
+#define Time_Preheat		0x11
+#define Time_Spray		0x21
+#define Time_Sterile		0x31
+#define Time_Scrub		0x41
+#define Time_Finish		0x51
+#define Time_Total			0x14
+#define Time_Test			0xA1
+#define Time_Reserve	0x47
+
+unsigned char   time_index[8] = {Time_Preheat, Time_Spray, Time_Sterile, Time_Scrub, Time_Finish, Time_Total, Time_Test,Time_Reserve};
 
 unsigned char   value_index[8] = {0x24, 0x28, 0x34, 0x44, 0x54};
 
@@ -158,23 +144,20 @@ unsigned char   icon_index2[4] = {0x10,0x20,0x30,0x40};
 
 
 unsigned char   error_display[100] = {0x5a, 0xa5, 0x53, 0x82, 0x01, 0x00, 0x4e, 0x75, 0x72, 0x69, 0x20, 0x53, 0x79, 0x73, 0x74, 0x65, 0x6d};
-
+unsigned char   error_page[7] = {0x5A, 0xA5, 0x04, 0x80, 0x03, 0x00, 0x12};
 
 
 extern unsigned char serialNum[13];
 extern unsigned char szStartCommand[37],szStartCommandCBT[37];	//�Ǹ�ó ����ó �Է�
 
 unsigned int uiWaitTime[5];
-volatile unsigned int uiFinishTime;
-volatile unsigned int uiTotalTime;
+unsigned int uiFinishTime;
+unsigned int uiTotalTime;
 extern unsigned int scrubbingTime;
 extern float fBoardTemperature, fHumidity, fModuleTemperature;
 float fCubic=0;
 float fInjectionPerMinute=0;
-float fInjectionPerMinute2=0;
 float fInjectionPerCubic=0;
-int TestfInjectionPerMinute=0;
-int Testfanspeed=0;
 float fDensity;
 
 struct data_format ggdata[10];
@@ -185,7 +168,7 @@ extern unsigned int uiScrubTime;
 extern struct log_format startData;
 extern struct log_format endData;
 
-extern struct DeviceInfo_format DeviceInfo;
+struct DeviceInfo_format DeviceInfo;
 
 //Login
 int Savepassword[4]={};
@@ -267,8 +250,8 @@ void InitLCD(void){
     DisplaySerialNumber();
 
     //Display Version
-    DisplayDebug("");
-    DisplayVersion('3','3','3');
+    DisplayDebug(' ', ' ');
+    DisplayVersion('3','3','0');
     InitDisplayValues();
 }
 
@@ -309,7 +292,7 @@ void LCD_Process(){
             iValue |= uart1_rx_data[8];
             LCD_SetValues(uart1_rx_data[5], iValue);
             break;
-        case 0x03 : //Password
+        case 3 : //Password
         	PW = uart1_rx_data[7];
         	PW <<= 8;
         	PW |= uart1_rx_data[8];
@@ -320,54 +303,6 @@ void LCD_Process(){
             iValue <<= 8;
             iValue |= uart1_rx_data[8];
             LCD_31(uart1_rx_data[5], iValue);
-            break;
-        case 0x06 :		//페이지는 변동가능
-            iValue = uart1_rx_data[7];
-            iValue <<= 8;
-            iValue |= uart1_rx_data[8];
-            LCD_06(uart1_rx_data[5], iValue);
-            break;
-        case 0x07 :		//페이지는 변동가능
-            iValue = uart1_rx_data[7];
-            iValue <<= 8;
-            iValue |= uart1_rx_data[8];
-            LCD_07(uart1_rx_data[5], iValue);
-            break;
-        case 0x51 :		//페이지는 변동가능
-            iValue = uart1_rx_data[7];
-            iValue <<= 8;
-            iValue |= uart1_rx_data[8];
-            LCD_51(uart1_rx_data[5], iValue);
-            break;
-        case 0x52 :		//페이지는 변동가능
-            iValue = uart1_rx_data[7];
-            iValue <<= 8;
-            iValue |= uart1_rx_data[8];
-            LCD_52(uart1_rx_data[5], iValue);
-            break;
-        case 0x53 :		//페이지는 변동가능
-            iValue = uart1_rx_data[7];
-            iValue <<= 8;
-            iValue |= uart1_rx_data[8];
-            LCD_53(uart1_rx_data[5], iValue);
-            break;
-        case 0x54 :		//페이지는 변동가능
-            iValue = uart1_rx_data[7];
-            iValue <<= 8;
-            iValue |= uart1_rx_data[8];
-            LCD_54(uart1_rx_data[5], iValue);
-            break;
-        case 0x55 :		//페이지는 변동가능
-            iValue = uart1_rx_data[7];
-            iValue <<= 8;
-            iValue |= uart1_rx_data[8];
-            LCD_55(uart1_rx_data[5], iValue);
-            break;
-        case 0x56 :		//페이지는 변동가능
-            iValue = uart1_rx_data[7];
-            iValue <<= 8;
-            iValue |= uart1_rx_data[8];
-            LCD_56(uart1_rx_data[5], iValue);
             break;
     }
 }
@@ -422,10 +357,9 @@ void LCD_Function_Process(int index, int value){
 #define TEST_COMPLETE				9
 
 unsigned int TestTime=0;
-unsigned int input_test_time=0;
 
 int Test_flag=0;
-volatile int Test_Start_flag=0;
+int Test_Start_flag=0;
 
 void MaintenanceButton(int key){
 	switch(key) {
@@ -438,7 +372,7 @@ void MaintenanceButton(int key){
 			DisplayUserNumber();
 			DisplaySMSonoffIcon((SMSonoff_Flag&0x01)==0x01);
 			DisplayUSBSecurityonoffIcon(USBSECURITYonoff_Flag);
-			if(DeviceInfo.loginonoff_flag==1){
+			if(DeviceInfo.Loginonoff_flag==1){
 				DisplayPage(LCD_ADMIN_SETTING);
 			}
 			else{
@@ -447,99 +381,133 @@ void MaintenanceButton(int key){
 			break;
 
 		case MAINTENANCE_FAN_TEST:
-			DisplayMsg("Do you want to test Fan?");
+			{
+			char msg[30] = "Do you want to test Fan?";
+			DisplayMsg(msg);
 			DisplayPage(LCD_MAINTENANCE_YESNO);
 			Test_flag=FAN_TEST;
 			TestTime=TIME_FAN_TEST+TIME_GAP;
+			}
 			break;
 
 		case MAINTENANCE_AIRCOMP_TEST:
+			{
 			Test_flag=AIRCOMP_TEST;
-			DisplayMsg("Do you want to test Air_Comp?");
+			char msg[30] = "Do you want to test Air_Comp?";
+			DisplayMsg(msg);
 			DisplayPage(LCD_MAINTENANCE_YESNO);
 			TestTime=TIME_AIR_TEST+TIME_GAP;
+			}
 			break;
 
 		case MAINTENANCE_SOL_TEST:
+			{
 			Test_flag=SOL_TEST;
-			DisplayMsg("Do you want to test Solenoid?");
+			char msg[30] = "Do you want to test Solenoid?";
+			DisplayMsg(msg);
 			DisplayPage(LCD_MAINTENANCE_YESNO);
 			TestTime=TIME_SOL_TEST+TIME_GAP;
+			}
 			break;
 
 		case MAINTENANCE_PERIPUMP_TEST:
+			{
 			Test_flag=PERIPUMP_TEST;
-			DisplayMsg("Do you want to test Peri_Pump?");
+			char msg[35] = "Do you want to test Peri_Pump?";
+			DisplayMsg(msg);
 			DisplayPage(LCD_MAINTENANCE_YESNO);
 			TestTime=TIME_PERI_TEST+TIME_GAP;
+			}
 			break;
 
 		case MAINTENANCE_SMS_TEST:
 			SendTestMessage();
-			DisplayMsg("Send test message");
-			DisplayPage(LCD_MAINTENANCE_CONFIRM);
 			break;
 
 		case MAINTENANCE_USB_TEST:
 			TestSaveUsbLog();
-			DisplayMsg("Save test data");
-			DisplayPage(LCD_MAINTENANCE_CONFIRM);
 			break;
 
 		case MAINTENANCE_SPRAY_TEST:
+			{
 			Test_flag=SPRAY_TEST;
-			DisplayMsg("Do you want to spray test?");
+			char msg[40] = "Do you want to spray test??";
+			DisplayMsg(msg);
 			DisplayPage(LCD_MAINTENANCE_YESNO);
 			TestTime=TIME_SPRAY1_TEST+TIME_SPRAY2_TEST+TIME_GAP;
-			break;
+			}
 
+			break;
 		case MAINTENANCE_CLEANING_TEST:
+			{
 			Test_flag=NOZZLE_CLEAN;
-			DisplayMsg("Do you want to clean the nozzle?");
+			char msg[40] = "Do you want to clean the nozzle??";
+			DisplayMsg(msg);
 			DisplayPage(LCD_MAINTENANCE_YESNO);
 			TestTime=TIME_CLEAN1+TIME_CLEAN2+TIME_GAP;
+			}
 			break;
 
 		case MAINTENANCE_TEST_YES:
 			switch(Test_flag) {
 				case FAN_TEST:
-					DisplayMsg("Fan Testing.");
+				{
+					char msg[30] = "Fan Testing.";
+					DisplayMsg(msg);
 					DisplayPage(LCD_MAINTENANCE_TEST);
 					Test_Start_flag=1;
 					ProcessTestEndTimer();
+				}
 					break;
 				case AIRCOMP_TEST:
-					DisplayMsg("Air Testing.");
+				{
+					char msg[30] = "Air Testing.";
+					DisplayMsg(msg);
 					DisplayPage(LCD_MAINTENANCE_TEST);
 					Test_Start_flag=1;
 					ProcessTestEndTimer();
+				}
 					break;
 				case SOL_TEST:
-					DisplayMsg("Solenoid Testing.");
+				{
+					char msg[30] = "Solenoid Testing.";
+					DisplayMsg(msg);
 					DisplayPage(LCD_MAINTENANCE_TEST);
 					Test_Start_flag=1;
 					ProcessTestEndTimer();
+				}
 					break;
 				case PERIPUMP_TEST:
-					DisplayMsg("Peri_Pump Testing.");
+				{
+					char msg[30] = "Peri_Pump Testing.";
+					DisplayMsg(msg);
 					DisplayPage(LCD_MAINTENANCE_TEST);
 					Test_Start_flag=1;
 					ProcessTestEndTimer();
+				}
 					break;
 				case SPRAY_TEST:
-					DisplayMsg("Spraying.(After the test, use the cleaning function)");
+				{
+					char msg[60] = "Spraying.(After the test, use the cleaning function)";
+					DisplayMsg(msg);
 					DisplayPage(LCD_MAINTENANCE_TEST);
 					Test_Start_flag=1;
 					ProcessTestEndTimer();
 					TestTime=TIME_SPRAY1_TEST+TIME_SPRAY2_TEST+TIME_GAP;
+				}
 					break;
 				case NOZZLE_CLEAN:
-					DisplayMsg("Cleaning.");
+				{
+					char msg[30] = "Cleaning.";
+					DisplayMsg(msg);
 					DisplayPage(LCD_MAINTENANCE_TEST);
 					Test_Start_flag=1;
 					ProcessTestEndTimer();
 					TestTime=TIME_CLEAN1+TIME_CLEAN2+TIME_GAP;
+				}
 					break;
+
+
 			}
 			break;
 
@@ -571,17 +539,8 @@ void MaintenanceButton(int key){
 			TurnOffScrubber();
 			Test_Start_flag=0;
 			TestTime=0;
-
-			if(Test_flag==7||Test_flag==8||Test_flag==10||Test_flag==11){
-				DisplayMsg("Canceled.\n\r"
-						"Please turn off and on the sterilizer.");
-				DisplayPage(LCD_MAINTENANCE_CONFIRM);
-			}
-			else{
-				DisplayMsg("Canceled");
-				DisplayPage(LCD_MAINTENANCE_CONFIRM);
-			}
 			Test_flag=0;
+			DisplayPage(LCD_MAINTENANCE_PAGE);
 			break;
 
 	}
@@ -594,9 +553,26 @@ void DisplayTestComplete(){
 }
 
 
+
+#define Loading_PAGE				42
+
+#define LCD_DEVELOPER_PAGE			43
+#define CHANGE_DEVICE_VERSION_PAGE	44
+#define SMS_SERVER_NOTICE_PAGE		45
+#define CHANGE_SERIAL_PAGE			46
+#define CHANGE_MODEM_PAGE			47
+#define CHANGE_PERI_VALUE_PAGE		48
+#define CHANGE_PERI_TEST_PAGE		49
+
+#define CHANGE_PERI_TEST_YES_PAGE	73
+
+#define LOGIN_ONOFF_PAGE			50
+#define RESET_ALL_PAGE				72
+
+
 #define DEVELOPER_PAGE				0x01
 
-#define device_version_BUTTON		0x10
+#define DEVICE_VERSION_BUTTON		0x10
 #define SERIAL_CHANGE_BUTTON		0x20
 #define MODEM_CHANGE_BUTTON			0x30
 #define SMS_SERVER_NOTICE_BUTTON	0x40
@@ -608,13 +584,12 @@ void DisplayTestComplete(){
 
 
 
-#define DEVICE_SELECT_S400V1			0x11
-#define DEVICE_SELECT_S400V2			0x12
-#define DEVICE_SELECT_S300V1			0x13
-#define DEVICE_SELECT_S300V2			0x14
-#define DEVICE_SELECT_SVC				0x15
+#define DEVICE_SELECT_S400V1		0x11
+#define DEVICE_SELECT_S400V2		0x12
+#define DEVICE_SELECT_S300V1		0x13
+#define DEVICE_SELECT_S300V2		0x14
+#define DEVICE_SELECT_SVC			0x15
 #define DEVICE_SELECT_NON_RFID		0x16
-#define DEVICE_SELECT_S100				0x18
 
 #define CHAGNE_SERIAL_CONFIRM		0x21
 #define CHAGNE_SERIAL_CANCEL		0x22
@@ -677,8 +652,8 @@ void DeveloperButton(int key){
 			break;
 
 		//Button
-		case device_version_BUTTON:
-			DisplayPage(CHANGE_device_version_PAGE);
+		case DEVICE_VERSION_BUTTON:
+			DisplayPage(CHANGE_DEVICE_VERSION_PAGE);
 			break;
 
 		case SERIAL_CHANGE_BUTTON:
@@ -693,112 +668,130 @@ void DeveloperButton(int key){
 			break;
 
 		case SMS_SERVER_NOTICE_BUTTON:
-			DisplayMsg("Do you want to use SMS Alarm(Server)?");
+			{
+			char msg[50] = "Do you want to use SMS Alarm(Server)?";
+			DisplayMsg(msg);
 			DisplayPage(SMS_SERVER_NOTICE_PAGE);
+			}
 			break;
 
 		case PERI_VALUE_SETTING_BUTTON:
-			Display51page();
+			if(DeviceInfo.Peri1_15_Value<ConstantPeristalticPump_15_PwmCycle-2000||DeviceInfo.Peri1_15_Value>ConstantPeristalticPump_15_PwmCycle+2000){
+				DeviceInfo.Peri1_15_Value=ConstantPeristalticPump_15_PwmCycle;
+			}
+
+			if(DeviceInfo.Peri2_15_Value<ConstantPeristalticPump_15_PwmCycle-2000||DeviceInfo.Peri2_15_Value>ConstantPeristalticPump_15_PwmCycle+2000){
+				DeviceInfo.Peri2_15_Value=ConstantPeristalticPump_15_PwmCycle;
+			}
+			if(DeviceInfo.Peri1_12_Value<ConstantPeristalticPump_12_PwmCycle-3000||DeviceInfo.Peri1_12_Value>ConstantPeristalticPump_12_PwmCycle+3000){
+				DeviceInfo.Peri1_12_Value=ConstantPeristalticPump_12_PwmCycle;
+			}
+
+			if(DeviceInfo.Peri2_12_Value<ConstantPeristalticPump_12_PwmCycle-3000||DeviceInfo.Peri2_12_Value>ConstantPeristalticPump_12_PwmCycle+3000){
+				DeviceInfo.Peri2_12_Value=ConstantPeristalticPump_12_PwmCycle;
+			}
+
+			if(DeviceInfo.Peri1_9_Value<ConstantPeristalticPump_9_PwmCycle-4000||DeviceInfo.Peri1_9_Value>ConstantPeristalticPump_9_PwmCycle+4000){
+				DeviceInfo.Peri1_9_Value=ConstantPeristalticPump_9_PwmCycle;
+			}
+
+			if(DeviceInfo.Peri2_9_Value<ConstantPeristalticPump_9_PwmCycle-5000||DeviceInfo.Peri2_9_Value>ConstantPeristalticPump_9_PwmCycle-2300){
+				DeviceInfo.Peri2_9_Value=ConstantPeristalticPump_9_PwmCycle-3000;
+			}
+
+			Temp_Peri1_15_Value=DeviceInfo.Peri1_15_Value;
+			Temp_Peri2_15_Value=DeviceInfo.Peri2_15_Value;
+
+			Temp_Peri1_12_Value=DeviceInfo.Peri1_12_Value;
+			Temp_Peri2_12_Value=DeviceInfo.Peri2_12_Value;
+
+			Temp_Peri1_9_Value=DeviceInfo.Peri1_9_Value;
+			Temp_Peri2_9_Value=DeviceInfo.Peri2_9_Value;
+
+			DisplayTempPeri1_15_Value();
+			DisplayTempPeri2_15_Value();
+			DisplayTempPeri1_12_Value();
+			DisplayTempPeri2_12_Value();
+			DisplayTempPeri1_9_Value();
+			DisplayTempPeri2_9_Value();
+
+			DisplayPeri1_15_Value();
+			DisplayPeri2_15_Value();
+			DisplayPeri1_12_Value();
+			DisplayPeri2_12_Value();
+			DisplayPeri1_9_Value();
+			DisplayPeri2_9_Value();
+			DisplayPage(CHANGE_PERI_VALUE_PAGE);
+
+			//수정중 다른 값들도 추가
+
 			break;
 
 		case LOGIN_ONOFF_BUTTON:
-			DisplayMsg("Do you want to use Login function?");
+			{
+			char msg[50] = "Do you want to use Login funtion?";
+			DisplayMsg(msg);
 			DisplayPage(LOGIN_ONOFF_PAGE);
+			}
 			break;
 
 		case RESERVATION_ONOFF_BUTTON:
-			DisplayMsg("Do you want to use Reservation?");
+			{
+			char msg[50] = "Do you want to use Reservation funtion?";
+			DisplayMsg(msg);
 			DisplayPage(RESERVATION_ONOFF_PAGE);
+			}
 			break;
 
 
 		case RESET_ALL_BUTTON:
-			DisplayMsg("Do you want to Reset all?");
+			{
+				char msg[40] = "Do you want to Reset all?";
+			DisplayMsg(msg);
 			DisplayPage(RESET_ALL_PAGE);
+			}
 			break;
 
-		//device_version_PAGE
+		//DEVICE_VERSION_PAGE
 		case DEVICE_SELECT_S400V1:
-			DeviceInfo.device_version=1;
-			fCubic=100;
-			fInjectionPerMinute=12;
-			fInjectionPerMinute2=3;
-			fInjectionPerCubic=6;
+			DeviceInfo.Device_Version=1;
 			serialNum[5]=0x34;
-			ReCalcTime();
 			Write_Flash();
 			DisplayDeveloperPage();
 			break;
 
 		case DEVICE_SELECT_S400V2:
-			DeviceInfo.device_version=2;
-			fCubic=100;
-			fInjectionPerMinute=12;
-			fInjectionPerMinute2=3;
-			fInjectionPerCubic=6;
-			serialNum[5]=0x34;
-			ReCalcTime();
+			DeviceInfo.Device_Version=2;
 			Write_Flash();
+			serialNum[5]=0x34;
 			DisplayDeveloperPage();
 			break;
 
 		case DEVICE_SELECT_S300V1:
-			DeviceInfo.device_version=3;
-			fCubic=100;
-			fInjectionPerMinute=12;
-			fInjectionPerMinute2=3;
-			fInjectionPerCubic=6;
-			serialNum[5]=0x33;
-			ReCalcTime();
+			DeviceInfo.Device_Version=3;
 			Write_Flash();
+			serialNum[5]=0x33;
 			DisplayDeveloperPage();
 			break;
 
 		case DEVICE_SELECT_S300V2:
-			DeviceInfo.device_version=4;
-			fCubic=100;
-			fInjectionPerMinute=12;
-			fInjectionPerMinute2=3;
-			fInjectionPerCubic=6;
-			serialNum[5]=0x33;
-			ReCalcTime();
+			DeviceInfo.Device_Version=4;
 			Write_Flash();
+			serialNum[5]=0x33;
 			DisplayDeveloperPage();
 			break;
 
 		case DEVICE_SELECT_SVC:
-			DeviceInfo.device_version=5;
-			fCubic=100;
-			fInjectionPerMinute=12;
-			fInjectionPerMinute2=3;
-			fInjectionPerCubic=6;
-			serialNum[5]=0x33;
-			ReCalcTime();
+			DeviceInfo.Device_Version=5;
 			Write_Flash();
+			serialNum[5]=0x33;
 			DisplayDeveloperPage();
 			break;
 
 		case DEVICE_SELECT_NON_RFID:
-			DeviceInfo.device_version=6;
-			fCubic=100;
-			fInjectionPerMinute=12;
-			fInjectionPerMinute2=3;
-			fInjectionPerCubic=6;
+			DeviceInfo.Device_Version=6;
+			Write_Flash();
 			serialNum[5]=0x34;
-			ReCalcTime();
-			Write_Flash();
-			DisplayDeveloperPage();
-			break;
-
-		case DEVICE_SELECT_S100:
-			DeviceInfo.device_version=8;
-			fCubic=10;
-			fInjectionPerMinute=12;
-			fInjectionPerMinute2=3;
-			fInjectionPerCubic=5;
-			serialNum[5]=0x31;
-			ReCalcTime();
-			Write_Flash();
 			DisplayDeveloperPage();
 			break;
 
@@ -869,8 +862,8 @@ void DeveloperButton(int key){
 				for(int i=0;i<4;i++){
 					szStartCommand[24+i]=szStartCommandCBT[24+i];
 					szStartCommand[28+i]=szStartCommandCBT[28+i];
-					DeviceInfo.modem_number1[i]=szStartCommandCBT[24+i];
-					DeviceInfo.modem_number2[i]=szStartCommandCBT[28+i];
+					DeviceInfo.Modem_number1[i]=szStartCommandCBT[24+i];
+					DeviceInfo.Modem_number2[i]=szStartCommandCBT[28+i];
 				}
 				Write_Flash();
 				changeusernum2=0;
@@ -884,6 +877,236 @@ void DeveloperButton(int key){
 			changeusernum3=0;
 			DisplayDeveloperPage();
 			break;
+
+
+
+		//PERI_VALUE_CHANGE_PAGE
+
+		case CHANGE_PERI_CONFIRM:
+			DisplayDeveloperPage();
+			//확인 눌렀을때 페리 펌프값 저장된 값으로 불러오기
+			//수정중
+			break;
+
+
+			//15 setting
+		case CHAGNE_PERI1_15_VALUE_UP:
+			Temp_Peri1_15_Value+=100;
+			if(Temp_Peri1_15_Value>ConstantPeristalticPump_15_PwmCycle+2000){
+				Temp_Peri1_15_Value=ConstantPeristalticPump_15_PwmCycle+2000;
+			}
+			DisplayTempPeri1_15_Value();
+			break;
+
+		case CHAGNE_PERI1_15_VALUE_DOWN:
+			Temp_Peri1_15_Value-=100;
+			if(Temp_Peri1_15_Value<ConstantPeristalticPump_15_PwmCycle-2000){
+				Temp_Peri1_15_Value=ConstantPeristalticPump_15_PwmCycle-2000;
+			}
+			DisplayTempPeri1_15_Value();
+			break;
+
+		case CHAGNE_PERI2_15_VALUE_UP:
+			Temp_Peri2_15_Value+=100;
+			if(Temp_Peri2_15_Value>ConstantPeristalticPump_15_PwmCycle+2000){
+				Temp_Peri2_15_Value=ConstantPeristalticPump_15_PwmCycle+2000;
+			}
+			DisplayTempPeri2_15_Value();
+			break;
+
+		case CHAGNE_PERI2_15_VALUE_DOWN:
+			Temp_Peri2_15_Value-=100;
+			if(Temp_Peri2_15_Value<ConstantPeristalticPump_15_PwmCycle-2000){
+				Temp_Peri2_15_Value=ConstantPeristalticPump_15_PwmCycle-2000;
+			}
+			DisplayTempPeri2_15_Value();
+			break;
+		case CHAGNE_PERI_15_VALUE_TEST:
+			Test_flag=16;
+			TestTime=TIME_PERI_TEST+TIME_GAP;
+			char msg[50] = "Do you want to Test Peri_Pump(15cc/min).";
+			DisplayMsg(msg);
+			DisplayPage(CHANGE_PERI_TEST_PAGE);
+			//15cc 관련 변수 추가 고려
+			break;
+
+		case CHAGNE_PERI_15_VALUE_SAVE:
+			DeviceInfo.Peri1_15_Value=Temp_Peri1_15_Value;
+			DeviceInfo.Peri2_15_Value=Temp_Peri2_15_Value;
+			Write_Flash();
+			DisplayTempPeri1_15_Value();
+			DisplayTempPeri2_15_Value();
+			DisplayPeri1_15_Value();
+			DisplayPeri2_15_Value();
+			DisplayPage(CHANGE_PERI_VALUE_PAGE);
+			//DisplayDeveloperPage();
+			break;
+
+
+			//12 setting
+		case CHAGNE_PERI1_12_VALUE_UP:
+			Temp_Peri1_12_Value+=100;
+			if(Temp_Peri1_12_Value>ConstantPeristalticPump_12_PwmCycle+3000){
+				Temp_Peri1_12_Value=ConstantPeristalticPump_12_PwmCycle+3000;
+			}
+			DisplayTempPeri1_12_Value();
+			break;
+
+		case CHAGNE_PERI1_12_VALUE_DOWN:
+			Temp_Peri1_12_Value-=100;
+			if(Temp_Peri1_12_Value<ConstantPeristalticPump_12_PwmCycle-3000){
+				Temp_Peri1_12_Value=ConstantPeristalticPump_12_PwmCycle-3000;
+			}
+			DisplayTempPeri1_12_Value();
+			break;
+
+		case CHAGNE_PERI2_12_VALUE_UP:
+			Temp_Peri2_12_Value+=100;
+			if(Temp_Peri2_12_Value>ConstantPeristalticPump_12_PwmCycle+3000){
+				Temp_Peri2_12_Value=ConstantPeristalticPump_12_PwmCycle+3000;
+			}
+			DisplayTempPeri2_12_Value();
+			break;
+
+		case CHAGNE_PERI2_12_VALUE_DOWN:
+			Temp_Peri2_12_Value-=100;
+			if(Temp_Peri2_12_Value<ConstantPeristalticPump_12_PwmCycle-3000){
+				Temp_Peri2_12_Value=ConstantPeristalticPump_12_PwmCycle-3000;
+			}
+			DisplayTempPeri2_12_Value();
+			break;
+
+		case CHAGNE_PERI_12_VALUE_TEST:
+		{
+			Test_flag=17;
+			TestTime=TIME_PERI_TEST+TIME_GAP;
+			char msg[50] = "Do you want to Test Peri_Pump(12cc/min).";
+			DisplayMsg(msg);
+			DisplayPage(CHANGE_PERI_TEST_PAGE);
+		}
+			break;
+
+
+		case CHAGNE_PERI_12_VALUE_SAVE:
+			DeviceInfo.Peri1_12_Value=Temp_Peri1_12_Value;
+			DeviceInfo.Peri2_12_Value=Temp_Peri2_12_Value;
+			Write_Flash();
+			DisplayTempPeri1_12_Value();
+			DisplayTempPeri2_12_Value();
+			DisplayPeri1_12_Value();
+			DisplayPeri2_12_Value();
+			DisplayPage(CHANGE_PERI_VALUE_PAGE);
+			//DisplayDeveloperPage();
+			break;
+
+
+			//9 setting
+		case CHAGNE_PERI1_9_VALUE_UP:
+			Temp_Peri1_9_Value+=100;
+			if(Temp_Peri1_9_Value>ConstantPeristalticPump_9_PwmCycle+4000){
+				Temp_Peri1_9_Value=ConstantPeristalticPump_9_PwmCycle+4000;
+			}
+			DisplayTempPeri1_9_Value();
+			break;
+
+		case CHAGNE_PERI1_9_VALUE_DOWN:
+			Temp_Peri1_9_Value-=100;
+			if(Temp_Peri1_9_Value<ConstantPeristalticPump_9_PwmCycle-4000){
+				Temp_Peri1_9_Value=ConstantPeristalticPump_9_PwmCycle-4000;
+			}
+			DisplayTempPeri1_9_Value();
+			break;
+
+		case CHAGNE_PERI2_9_VALUE_UP:
+			Temp_Peri2_9_Value+=100;
+			if(Temp_Peri2_9_Value>ConstantPeristalticPump_9_PwmCycle-2300){
+				Temp_Peri2_9_Value=ConstantPeristalticPump_9_PwmCycle-2300;
+			}
+			DisplayTempPeri2_9_Value();
+			break;
+
+		case CHAGNE_PERI2_9_VALUE_DOWN:
+			Temp_Peri2_9_Value-=100;
+			if(Temp_Peri2_9_Value<ConstantPeristalticPump_9_PwmCycle-5000){
+				Temp_Peri2_9_Value=ConstantPeristalticPump_9_PwmCycle-5000;
+			}
+			DisplayTempPeri2_9_Value();
+			break;
+
+
+		case CHAGNE_PERI_9_VALUE_TEST:
+		{
+			Test_flag=18;
+			TestTime=TIME_PERI_TEST+TIME_GAP;
+			char msg[50] = "Do you want to Test Peri_Pump(9cc/min).";
+			DisplayMsg(msg);
+			DisplayPage(CHANGE_PERI_TEST_PAGE);
+		}
+			break;
+
+		case CHAGNE_PERI_9_VALUE_SAVE:
+			DeviceInfo.Peri1_9_Value=Temp_Peri1_9_Value;
+			DeviceInfo.Peri2_9_Value=Temp_Peri2_9_Value;
+			Write_Flash();
+			DisplayTempPeri1_9_Value();
+			DisplayTempPeri2_9_Value();
+			DisplayPeri1_9_Value();
+			DisplayPeri2_9_Value();
+			DisplayPage(CHANGE_PERI_VALUE_PAGE);
+			//DisplayDeveloperPage();
+			break;
+
+		case CHAGNE_PERI_VALUE_TEST_YES:
+		{
+			Test_Start_flag=1;
+			if(Test_flag==16){
+				char msg[30] = "Peri_Pump(15cc/min) Testing.";
+				DisplayMsg(msg);
+			}
+			else if(Test_flag==17){
+				char msg[30] = "Peri_Pump(12cc/min) Testing.";
+				DisplayMsg(msg);
+			}
+			else if(Test_flag==18){
+				char msg[30] = "Peri_Pump(9cc/min) Testing.";
+				DisplayMsg(msg);
+			}
+
+			DisplayPage(CHANGE_PERI_TEST_YES_PAGE);
+			ProcessTestEndTimer();
+			//15cc 관련 변수 추가 고려
+		}
+			break;
+
+		case CHAGNE_PERI_VALUE_TEST_NO:
+			Test_flag=0;
+			TestTime=0;
+			DisplayPage(CHANGE_PERI_VALUE_PAGE);
+			break;
+
+		case CHAGNE_PERI_VALUE_TEST_STOP:
+			Test_Start_flag=0;
+			TurnOffFanPump();
+			TurnOffHeater();
+			TurnOffAirPump();
+			TurnOffSolenoidFluid();
+			TurnOffSolenoidAir();
+			//SetFanPumpSpeedAllMin2();
+			SetFanPumpSpeedAll(30);
+			TurnOffPeristalticPump();
+			TurnOffScrubber();
+			Test_Start_flag=0;
+			TestTime=0;
+			Test_flag=0;
+			DisplayPage(CHANGE_PERI_VALUE_PAGE);
+			break;
+
+
+
+
+
+
+
 
 			//SMS 문자 on/off
 		case SMS_SERVER_NOTICE_YES:
@@ -901,44 +1124,44 @@ void DeveloperButton(int key){
 			break;
 
 		case LOGIN_ON:
-			if(DeviceInfo.loginonoff_flag==1){
+			if(DeviceInfo.Loginonoff_flag==1){
 				DisplayDeveloperPage();
 			}
 			else{
-				DeviceInfo.loginonoff_flag=1;
+				DeviceInfo.Loginonoff_flag=1;
 				Write_Flash();
 				DisplayDeveloperPage();
 			}
 			break;
 
 		case LOGIN_OFF:
-			if(DeviceInfo.loginonoff_flag==0){
+			if(DeviceInfo.Loginonoff_flag==0){
 				DisplayDeveloperPage();
 			}
 			else{
-				DeviceInfo.loginonoff_flag=0;
+				DeviceInfo.Loginonoff_flag=0;
 				Write_Flash();
 				DisplayDeveloperPage();
 			}
 			break;
 
 		case RESERVATION_ON:
-			if(DeviceInfo.reservationonoff_flag==1){
+			if(DeviceInfo.Reservationonoff_flag==1){
 				DisplayDeveloperPage();
 			}
 			else{
-				DeviceInfo.reservationonoff_flag=1;
+				DeviceInfo.Reservationonoff_flag=1;
 				Write_Flash();
 				DisplayDeveloperPage();
 			}
 			break;
 
 		case RESERVATION_OFF:
-			if(DeviceInfo.reservationonoff_flag==0){
+			if(DeviceInfo.Reservationonoff_flag==0){
 				DisplayDeveloperPage();
 			}
 			else{
-				DeviceInfo.reservationonoff_flag=0;
+				DeviceInfo.Reservationonoff_flag=0;
 				Write_Flash();
 				DisplayDeveloperPage();
 			}
@@ -980,7 +1203,7 @@ void DisplaySerialNumberblank(){
 
 void DisplayHardwareVersion(){
 	unsigned char Hardware_Version_display[13] = {0x5A, 0xA5, 0x0A, 0x82, 0x20, 0x50, 'S', '4', '0', '0', '_', 'V', '1'};
-	switch(DeviceInfo.device_version){
+	switch(DeviceInfo.Device_Version){
 		case 1 :
 			Hardware_Version_display[6]='S';
 			Hardware_Version_display[7]='4';
@@ -1035,32 +1258,166 @@ void DisplayHardwareVersion(){
 			Hardware_Version_display[11]='V';
 			Hardware_Version_display[12]='2';
 			break;
-		case 8 :
-			Hardware_Version_display[6]='S';
-			Hardware_Version_display[7]='1';
-			Hardware_Version_display[8]='0';
-			Hardware_Version_display[9]='0';
-			Hardware_Version_display[10]=' ';
-			Hardware_Version_display[11]=' ';
-			Hardware_Version_display[12]=' ';
-			break;
 	}
 	HAL_UART_Transmit(&huart1, Hardware_Version_display, 13, 10);
 }
 
 
+void DisplayPeri1_15_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0x60, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = DeviceInfo.Peri1_15_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayTempPeri1_15_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0x68, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = Temp_Peri1_15_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayPeri2_15_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0x70, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = DeviceInfo.Peri2_15_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayTempPeri2_15_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0x78, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = Temp_Peri2_15_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayPeri1_12_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0x80, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = DeviceInfo.Peri1_12_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayTempPeri1_12_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0x88, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = Temp_Peri1_12_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayPeri2_12_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0x90, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = DeviceInfo.Peri2_12_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayTempPeri2_12_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0x98, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = Temp_Peri2_12_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayPeri1_9_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0xA0, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = DeviceInfo.Peri1_9_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayTempPeri1_9_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0xA8, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = Temp_Peri1_9_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayPeri2_9_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0xB0, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = DeviceInfo.Peri2_9_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+void DisplayTempPeri2_9_Value(){
+	unsigned char   Peri_value_display[10] = {0x5A, 0xA5, 0x07, 0x82, 0x20, 0xB8, 0x00, 0x00, 0x00};
+    unsigned int uivalue;
+    uivalue = Temp_Peri2_9_Value;
+    Peri_value_display[6] = uivalue >> 24;
+    Peri_value_display[7] = uivalue >> 16;
+    Peri_value_display[8] = uivalue >> 8;
+    Peri_value_display[9] = uivalue & 0xff;
+    HAL_UART_Transmit(&huart1, Peri_value_display, 10, 10);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //--------------------------------------------------
 
-#define TOUCH_START_STOP_BUTTON 						0x02
-#define TOUCH_H2O2CHANGE_BUTTON 						0x03
-#define GOTO_FIRST_PAGE 											0x04
-#define GOTO_OPERATION_PAGE 								0x06
-#define GOTO_SETTING_PAGE 										0x07
-#define GOTO_OPERATION_BEFORE_PAGE					0x08
-#define GOTO_SETTING_BEFORE_PAGE							0x09
-
-#define SOLUTION_CHECK_YES									0x0A
-#define SOLUTION_CHECK_NO										0x0B
+#define TOUCH_START_STOP_BUTTON 	2
+#define TOUCH_H2O2CHANGE_BUTTON 	3
+#define GOTO_FIRST_PAGE 			4
+#define GOTO_OPERATION_PAGE 		6
+#define GOTO_SETTING_PAGE 			7
+#define GOTO_OPERATION_BEFORE_PAGE	8
+#define GOTO_SETTING_BEFORE_PAGE		9
 
 #define RESERVATOIN_YES_BUTTON							0x0D
 #define RESERVATOIN_SETTING_START_BUTTON			0x0E
@@ -1101,15 +1458,13 @@ void DoActionButton(int key){
         	break;
 
         case GOTO_OPERATION_PAGE:	//LCD_OPERATTION
-            if(DeviceInfo.loginonoff_flag==1){
+            if(DeviceInfo.Loginonoff_flag==1){
             	DisplayLoginStatus();
-            	InitDisplayValues();
             	DisplayPage(LCD_OPERATTION_NORMAL);
             }
             else{
             	LOGIN_ID=0;
 				DisplayLoginStatus();
-				InitDisplayValues();
 				DisplayPage(LCD_OPERATTION_NORMAL);
             }
         	break;
@@ -1119,7 +1474,7 @@ void DoActionButton(int key){
         	break;
 
         case GOTO_OPERATION_BEFORE_PAGE:
-            if(DeviceInfo.loginonoff_flag==1){
+            if(DeviceInfo.Loginonoff_flag==1){
             	DisplayPage(LCD_SELECT_MENU);
             }
             else{
@@ -1127,7 +1482,7 @@ void DoActionButton(int key){
             }
         	break;
         case GOTO_SETTING_BEFORE_PAGE:
-            if(DeviceInfo.loginonoff_flag==1){
+            if(DeviceInfo.Loginonoff_flag==1){
             	DisplayPage(LCD_SELECT_MENU);
             }
             else{
@@ -1156,20 +1511,10 @@ void DoActionButton(int key){
         	CancelProcess();
         	break;
 
-
-
-        case SOLUTION_CHECK_YES:
-        	if(DeviceInfo.reservationonoff_flag==0){
-        		StartProcess();//수정중
-        	}
-        	else{
-        		DisplayReservePopUp("Would you use the reservation function?");
-        	}
-
+        case 10:
         	break;
+        case 11:
 
-        case SOLUTION_CHECK_NO:
-        	DisplayOperationPage();
         	break;
         case 12:
         	break;
@@ -1194,10 +1539,11 @@ void LoginFuntionButton(int key){
         case USER1:
         	SelectID=USER1;
         	if(IDLIST.Status[SelectID]==1){
-				Display06page();
+				DisplayPage(LCD_USER1_BEFORE_PW);
         	}
         	else{
-				DisplayMsg("Account Locked, Please contact your admin");
+				char msg[45] = "Account Locked, Please contact your admin";
+				DisplayMsg(msg);
 				SelectID=0;
 				LOGIN_ID=0;
 				DisplayPage(LCD_LOGIN_WRONG_PW);
@@ -1206,10 +1552,11 @@ void LoginFuntionButton(int key){
         case USER2:
         	SelectID=USER2;
         	if(IDLIST.Status[SelectID]==1){
-        		Display06page();
+				DisplayPage(LCD_USER2_BEFORE_PW);
         	}
         	else{
-        		DisplayMsg("Account Locked, Please contact your admin");
+				char msg[45] = "Account Locked, Please contact your admin";
+				DisplayMsg(msg);
 				SelectID=0;
 				LOGIN_ID=0;
 				DisplayPage(LCD_LOGIN_WRONG_PW);
@@ -1218,10 +1565,11 @@ void LoginFuntionButton(int key){
         case USER3:
         	SelectID=USER3;
         	if(IDLIST.Status[SelectID]==1){
-        		Display06page();
+				DisplayPage(LCD_USER3_BEFORE_PW);
         	}
         	else{
-        		DisplayMsg("Account Locked, Please contact your admin");
+				char msg[45] = "Account Locked, Please contact your admin";
+				DisplayMsg(msg);
 				SelectID=0;
 				LOGIN_ID=0;
 				DisplayPage(LCD_LOGIN_WRONG_PW);
@@ -1230,10 +1578,11 @@ void LoginFuntionButton(int key){
         case SUPERUSER:
         	SelectID=SUPERUSER;
         	if(IDLIST.Status[SelectID]==1){
-        		Display06page();
+				DisplayPage(LCD_SUPERUSER_BEFORE_PW);
         	}
         	else{
-        		DisplayMsg("Account Locked, Please contact your admin");
+				char msg[45] = "Account Locked, Please contact your admin";
+				DisplayMsg(msg);
 				SelectID=0;
 				LOGIN_ID=0;
 				DisplayPage(LCD_LOGIN_WRONG_PW);
@@ -1241,10 +1590,19 @@ void LoginFuntionButton(int key){
             break;
         case ADMIN:
         	SelectID=ADMIN;
-        	Display06page();
+			DisplayPage(LCD_ADMIN_BEFORE_PW);
 			break;
 		case 6:
 			break;
+
+		case NOT_INPUT:
+		{
+			char msg[45] = "Please input password";
+			DisplayMsg(msg);
+			DisplayPage(LCD_LOGIN_WRONG_PW);
+		}
+			break;
+
 
 		case LOGIN_BUTTON:
 			if(IDLIST.Status[SelectID]==1||SelectID==5){
@@ -1252,7 +1610,8 @@ void LoginFuntionButton(int key){
 				LoginProcess();
 			}
 			else if(IDLIST.Status[SelectID]==0){
-				DisplayMsg("Account Locked, Please contact your admin");
+				char msg[45] = "Account Locked, Please contact your admin";
+				DisplayMsg(msg);
 				LOGIN_ID=0;
 				DisplayPage(LCD_LOGIN_WRONG_PW);
 			}
@@ -1263,19 +1622,19 @@ void LoginFuntionButton(int key){
 					DisplayPage(LCD_LOGIN_SELECT_ID);
 					break;
 				case USER1:
-					DisplayPage(LCD_SELECTED_ID);
+					DisplayPage(LCD_USER1_BEFORE_PW);
 					break;
 				case USER2:
-					DisplayPage(LCD_SELECTED_ID);
+					DisplayPage(LCD_USER2_BEFORE_PW);
 					break;
 				case USER3:
-					DisplayPage(LCD_SELECTED_ID);
+					DisplayPage(LCD_USER3_BEFORE_PW);
 					break;
 				case SUPERUSER:
-					DisplayPage(LCD_SELECTED_ID);
+					DisplayPage(LCD_SUPERUSER_BEFORE_PW);
 					break;
 				case ADMIN:
-					DisplayPage(LCD_SELECTED_ID);
+					DisplayPage(LCD_ADMIN_BEFORE_PW);
 					break;
 		    }
 			break;
@@ -1335,20 +1694,29 @@ void SettingButton(int key){	//3
 	    	case 0:
 	    		break;
 	        case SMS_ONOFF_BUTTON:
-				DisplayMsg("Do you want to use SMS Alarm?");
+	        	{
+				char msg[40] = "Do you want to use SMS Alarm?";
+				DisplayMsg(msg);
 				DisplayPage(SMS_SETTING_POPUP);
+	        	}
 	            break;
 	        case SMS_NUMBER_CHANGE_BUTTON:
 	        	DisplayUserNumberblank();
 	        	DisplayPage(MOBILE_SETTING_POPUP);
 	            break;
 	        case USB_SECURITY_ONOFF_BUTTON:
-	        	DisplayMsg("Do you want to use USB Security?");
+	        	{
+	        		char msg[40] = "Do you want to use USB Security?";
+	        	DisplayMsg(msg);
 	        	DisplayPage(USB_SETTING_POPUP);
+	        	}
 	            break;
 	        case SETTING_RESET_BUTTON:
-				DisplayMsg("Do you want to Reset?");
+				{
+					char msg[40] = "Do you want to Reset?";
+				DisplayMsg(msg);
 				DisplayPage(RESET_SETTING_POPUP);
+				}
 	            break;
 	        case PASSWORD_CHANGE_BUTTON:
 	        	DisplayPage(CHANGE_PASSWORD1_POPUP);
@@ -1450,8 +1818,11 @@ void SettingButton(int key){	//3
 
 
 			case NON_INPUT_CURRENT_PASSWORD:
-				DisplayMsg("Input Current Password.");
+				{
+				char msg[40] = "Input Current Password.";
+				DisplayMsg(msg);
 				DisplayPage(CHANGE_PASSWORD2_POPUP);
+				}
 				break;
 			case GOTO_SETTINGPAGE_BUTTON:
 				DisplaySettingPage();
@@ -1462,8 +1833,11 @@ void SettingButton(int key){	//3
 				DisplayPage(CHANGE_PASSWORD1_POPUP);
 				break;
 			case NON_INPUT_NEW_PASSWORD:
-				DisplayMsg("Input New Password.");
+				{
+				char msg[40] = "Input New Password.";
+				DisplayMsg(msg);
 				DisplayPage(CHANGE_PASSWORD1_POPUP);
+				}
 				//DisplaySettingPage();
 				break;
 			case CHANGE_PASSWORD_CONFIRM:
@@ -1478,24 +1852,36 @@ void SettingButton(int key){	//3
 				break;
 
 			case ACCOUNT_ACTIVE_USER1:
-				DisplayMsg("Do you want to be active user 1?");
+				{
+				char msg[40] = "Do you want to be active user 1?";
+				DisplayMsg(msg);
 				DisplayPage(ACCOUNT_POPUP2);
 				SelectID=1;
+				}
 				break;
 			case ACCOUNT_ACTIVE_USER2:
-				DisplayMsg("Do you want to be active user 2?");
+				{
+				char msg[40] = "Do you want to be active user 2?";
+				DisplayMsg(msg);
 				DisplayPage(ACCOUNT_POPUP2);
 				SelectID=2;
+				}
 				break;
 			case ACCOUNT_ACTIVE_USER3:
-				DisplayMsg("Do you want to be active user 3?");
+				{
+				char msg[40] = "Do you want to be active user 3?";
+				DisplayMsg(msg);
 				DisplayPage(ACCOUNT_POPUP2);
 				SelectID=3;
+				}
 				break;
 			case ACCOUNT_ACTIVE_SUSER:
-				DisplayMsg("Do you want to be active Superuser?");
+				{
+				char msg[40] = "Do you want to be active Superuser?";
+				DisplayMsg(msg);
 				DisplayPage(ACCOUNT_POPUP2);
 				SelectID=4;
+				}
 				break;
 			case ACCOUNT_ACTIVE_BUTTON:
 				if(IDLIST.Status[SelectID]==1){
@@ -1533,51 +1919,35 @@ void SettingButton(int key){	//3
 
 void StartButtonProcess(void){
     if(Running_Flag == 0) {
-    	if(PeristalticPumpCnt==0){
-			if((fBoardTemperature>0)&&(fModuleTemperature>0)){//온도 센서 동작 여부 확인
-				if(DeviceInfo.reservationonoff_flag==0){
-					if(DeviceInfo.device_version==5){
-						StartProcess();
-					}
-					else if(DeviceInfo.device_version==6){
-						StartProcess();
-					}
-					else if(DeviceInfo.device_version==8){
-						//잔량 체크 문구 출력
-						DisplaySolutionCheckPopUp("Did you check the amount of H2O2");
-					}
-					else{
-						if(H2O2Check()){
-							StartProcess();
-						}
-					}
-				}
-				else{
-					if(DeviceInfo.device_version==5){
-						DisplayReservePopUp("Would you use the reservation function?");
-					}
-					else if(DeviceInfo.device_version==6){
-						DisplayReservePopUp("Would you use the reservation function?");
-					}
-					else if(DeviceInfo.device_version==8){
-						//잔량 체크 문구 출력
-						DisplaySolutionCheckPopUp("Did you check the amount of H2O2 solution");
-					}
-					else{
-						if(H2O2Check()){
-							DisplayReservePopUp("Would you use the reservation function?");
-						}
-					}
-				}
+    	if(DeviceInfo.Reservationonoff_flag==0){
+			if(DeviceInfo.Device_Version==5){
+				StartProcess();
+			}
+			else if(DeviceInfo.Device_Version==6){
+				StartProcess();
 			}
 			else{
-				DisplayPopUpMessage("Please check temperature sensor");
+				if(H2O2Check()){
+					StartProcess();
+				}
 			}
     	}
     	else{
-    		DisplayPopUpMessage("Please restart the sterilizer");
+    		if(DeviceInfo.Device_Version==5){
+    			char msg[40] = "Would you use the reservation function?";
+    			DisplayReservePopUp(msg);
+				}
+				else if(DeviceInfo.Device_Version==6){
+					char msg[40] = "Would you use the reservation function?";
+					DisplayReservePopUp(msg);
+				}
+				else{
+					if(H2O2Check()){
+						char msg[40] = "Would you use the reservation function?";
+						DisplayReservePopUp(msg);
+					}
+				}
     	}
-
     }
     else {
         CancelProcess();
@@ -1598,61 +1968,45 @@ void LCD_SetValues(int index, int value){
 			DisplayReserveSettings();
 			break;
         case 0x14 : // set cubic
-        	if(DeviceInfo.device_version==8){
-        		if(value>1000){
-        			DisplayPopUpMessage("Input smaller than 100");
-					DisplayModeIcon(0);
-        			fCubic=10;
-        		}
-        		else{
-        			fCubic=(float)value/10;
-        		}
-        	}
-        	else{
-                fCubic = (float)value / 10;
-        	}
+            fCubic = (float)value / 10;
             DisplayCubic();
             ReCalcTime();
             break;
         case 0x24 : // set InjectionPerMinute
-        	if(DeviceInfo.device_version==8){
-            	if(value==3||value==4||value||5){
-            		fInjectionPerMinute2 = value;
-    			}
-            	else{
-    				DisplayPopUpMessage("Input 3 or 4 or 5");
-    				InitDisplayValues();
-            	}
-        	}
+        	fInjectionPerMinute = (float)value / 10;
+			//if(fInjectionPerMinute!=15&&fInjectionPerMinute!=12&&fInjectionPerMinute!=9){
+        	if(fInjectionPerMinute==15||fInjectionPerMinute==12){
+
+			}
         	else{
-            	if(value==9||value==15||value==12){
-            		fInjectionPerMinute = value;
-    			}
-            	else{
-    				DisplayPopUpMessage("Input 9 or 12 or 15");
-    				InitDisplayValues();
-            	}
+        		fInjectionPerMinute=ConstantInjectionPerMinute;
+				char msg[80] = "Input 15 or 12";
+				DisplayErrorMessage(msg);
+				DisplayModeIcon(0);
         	}
 			DisplayInjectionPerMinute();
 			PeristalticSpeed();
 			ReCalcTime();
             break;
         case 0x34 :	// set InjectionPerCubic
-			if(value>=1&&value<=9){// ť�� �Է��Ҽ��ְ� ����.
-				fInjectionPerCubic = value;
-			}
-			else{
-				//fInjectionPerCubic=6;
-				DisplayPopUpMessage("Input more than 1 and less than 9");
-				DisplayModeIcon(0);
-			}
+            fInjectionPerCubic = (float)value / 10;
+        	if(fInjectionPerCubic>=5.0&&fInjectionPerCubic<=8.0){// ť�� �Է��Ҽ��ְ� ����.
+        	}
+
+        	else{
+        		fInjectionPerCubic=6.0;
+        		char msg[80] = "Input more than 5 and less than 8";
+        		DisplayErrorMessage(msg);
+        		DisplayModeIcon(0);
+        	}
         	DisplayInjectionPerCubic();
             ReCalcTime();
             break;
         case 0x44 :	// set scrubtime
         	if((value/10) > 12){
+        		char msg[80] = "Input smaller than 12";
         		uiScrubTime=100;
-        		DisplayPopUpMessage("Input smaller than 12");
+        		DisplayErrorMessage(msg);
         		DisplayModeIcon(0);
         	}else{
         		if(value==0){
@@ -1699,19 +2053,19 @@ void LCD_Password(int index, int PW){
         	InputPassword[3]=PW%10;
             switch(SelectID){
         		case 1:
-        			DisplayPage(LCD_INPUTED_PW);
+        			DisplayPage(LCD_USER1_AFTER_PW);
         			break;
         		case 2:
-        			DisplayPage(LCD_INPUTED_PW);
+        			DisplayPage(LCD_USER2_AFTER_PW);
         			break;
         		case 3:
-        			DisplayPage(LCD_INPUTED_PW);
+        			DisplayPage(LCD_USER3_AFTER_PW);
         			break;
         		case 4:
-        			DisplayPage(LCD_INPUTED_PW);
+        			DisplayPage(LCD_SUPERUSER_AFTER_PW);
         			break;
         		case 5:
-        			DisplayPage(LCD_INPUTED_PW);
+        			DisplayPage(LCD_ADMIN_AFTER_PW);
         			break;
             }
             break;
@@ -1804,14 +2158,16 @@ void LoginProcess(){
 	else{
 		LOGIN_ID=SelectID;
 		if(LOGIN_ID==5){
-			DisplayMsg("Wrong Password");
+			char msg[20] = "Wrong Password";
+			DisplayMsg(msg);
 		}
 		else{
 			IDLIST.Attempts[LOGIN_ID]++;
 			//횟수 초과시 LOCK
 			if(IDLIST.Attempts[LOGIN_ID]>=5){
 				IDLIST.Status[LOGIN_ID]=0;
-				DisplayMsg("Account Locked, Please contact your admin");
+				char msg[45] = "Account Locked, Please contact your admin";
+				DisplayMsg(msg);
 			}
 			else{
 				char msg[45] = "Wrong Password , Failed Login Attempts : ";
@@ -1828,7 +2184,7 @@ void LoginProcess(){
 }
 
 void DisplayFirstPage(){
-    if(DeviceInfo.loginonoff_flag==1){
+    if(DeviceInfo.Loginonoff_flag==1){
     	SelectID=0;
 
     	DisplayPage(LCD_LOGIN_ON_FIRST);
@@ -1861,38 +2217,38 @@ void DisplayStatus(){
 }
 
 void DisplayPreHeatTime(){
-    DisplayTime(0x00, 0x11, uiWaitTime[1] + 99);
+    DisplayTime(0, uiWaitTime[1] + 99);
 }
 
 void DisplaySprayTime(){
-    DisplayTime(0x00, 0x21, uiWaitTime[2] + 99);
+    DisplayTime(1, uiWaitTime[2] + 99);
 }
 
 void DisplaySterileTime(){
-    DisplayTime(0x00, 0x31, uiWaitTime[3] + 99);
+    DisplayTime(2, uiWaitTime[3] + 99);
 }
 
 void DisplayScrubTime(){
-    DisplayTime(0x00, 0x41, uiWaitTime[4] + 99);
+    DisplayTime(3, uiWaitTime[4] + 99);
 }
 
 void DisplayFinishTime(){
-	DisplayTime(0x00, 0x51,uiFinishTime + 99);
+	DisplayTime(4, uiFinishTime + 99);
 }
 
 void DisplayTotalTime(){
-    DisplayTime(0x00, 0x14, uiTotalTime + 99);
+    DisplayTime(5, uiTotalTime + 99);
 }
+
 
 void DisplayTestTime(){
-    DisplayTime(0x00, 0xA1, TestTime + 99);
+    DisplayTime(6, TestTime + 99);
 }
 
 
-unsigned char   time_display[9] = {0x5A, 0xA5, 0x06, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00};
-void DisplayTime(int page, int index, unsigned int icentisecond){
-	time_display[4] = page;
-	time_display[5] = index;
+void DisplayTime(int index, unsigned int icentisecond){
+    time_display[5] = time_index[index];
+
     unsigned int iMinute = icentisecond / 6000;
     unsigned int iHour = iMinute / 60;
     iMinute = iMinute - (iHour * 60);
@@ -1919,26 +2275,11 @@ void DisplayHuminity(){
 }
 
 void DisplayInjectionPerMinute(){
-	/*
-	if(DeviceInfo.device_version==8){
-		DisplayUserValue(1, fInjectionPerMinute2);
-	}
-	else{
-		DisplayUserValue(1, fInjectionPerMinute);
-	}
-	*/
-	if(DeviceInfo.device_version==8){
-		DisplayPageValue(0x02, 0x24, fInjectionPerMinute2);
-	}
-	else{
-		DisplayPageValue(0x02, 0x24, fInjectionPerMinute);
-	}
-
+    DisplayUserValue(1, fInjectionPerMinute);
 }
 
 void DisplayInjectionPerCubic(){
-	//DisplayUserValue(2, fInjectionPerCubic);
-	DisplayPageValue(0x02, 0x34, fInjectionPerCubic);
+	DisplayUserValue(2, fInjectionPerCubic);
 }
 
 void DisplayDensity(){
@@ -1948,12 +2289,7 @@ void DisplayDensity(){
 void DisplayH2O2Volume(){
     //DisplayValue(7, fH2O2Volume);
     unsigned int uivalue;
-    if(DeviceInfo.device_version==8){
-    	uivalue=fCubic*fInjectionPerCubic*10;
-    }
-    else{
-    	uivalue = (RFIDData.fH2O2Volume * 10);
-    }
+    uivalue = (RFIDData.fH2O2Volume * 10);
     value_display[2] = 0x07;
     value_display[5] = value_index[4];
 
@@ -1965,7 +2301,7 @@ void DisplayH2O2Volume(){
 }
 
 void DisplaySerialNumber(){
-	switch(DeviceInfo.device_version){
+	switch(DeviceInfo.Device_Version){
 		case 1 :
 			serialNum[1]='F';
 			serialNum[2]='N';
@@ -2017,15 +2353,6 @@ void DisplaySerialNumber(){
 			serialNum[3]='-';
 			serialNum[4]='S';
 			serialNum[5]='4';
-			serialNum[6]='0';
-			serialNum[7]='0';
-			break;
-		case 8 :
-			serialNum[1]='F';
-			serialNum[2]='N';
-			serialNum[3]='-';
-			serialNum[4]='S';
-			serialNum[5]='1';
 			serialNum[6]='0';
 			serialNum[7]='0';
 			break;
@@ -2218,7 +2545,7 @@ void DisplaySettingPage(){
 			DisplayUserNumber();
 			DisplaySMSonoffIcon((SMSonoff_Flag&0x01)==0x01);
 			DisplayUSBSecurityonoffIcon(USBSECURITYonoff_Flag);
-			if(DeviceInfo.loginonoff_flag==1){
+			if(DeviceInfo.Loginonoff_flag==1){
 				DisplayPage(LCD_ADMIN_SETTING);
 			}
 			else{
@@ -2313,10 +2640,10 @@ void DisplayACCOUNTActiveIcon(){
     DisplayIcon2(3, IDLIST.Status[4]);
 }
 void DisplayRESERVEATOINOnoffIcon(){
-	DisplayIcon(13,DeviceInfo.reservationonoff_flag);
+	DisplayIcon(13,DeviceInfo.Reservationonoff_flag);
 }
 void DisplayLOGINOnoffIcon(){
-	DisplayIcon(14,DeviceInfo.loginonoff_flag);
+	DisplayIcon(14,DeviceInfo.Loginonoff_flag);
 }
 
 void DisplayIcon(int index, int value){
@@ -2333,9 +2660,19 @@ void DisplayIcon2(int index, int value){
     HAL_UART_Transmit(&huart1, icon_display2, 8, 10);
 }
 
-void DisplayPopUpMessage(char *msg){
-	DisplayMsg(msg);
-    DisplayPage(LCD_OPERATTION_MESSAGE);
+void DisplayErrorMessage(char *msg)
+{
+    __disable_irq();
+    memset(error_display + 6, 0, 80);
+    for(int i = 0; i < 80; i++) {
+        error_display[6 + i] = msg[i];
+    }
+    HAL_UART_Transmit(&huart1, error_display, 86, 10);
+    //HAL_UART_Transmit(&huart1, error_popup, 6, 10);
+    memset(error_display + 6, 0, 80);
+
+    error_page[6] = 0x0d;
+    HAL_UART_Transmit(&huart1, error_page, 7, 10);
     __enable_irq();
 }
 
@@ -2350,9 +2687,14 @@ void DisplayMsg(char *msg){
     __enable_irq();
 }
 
-void DisplayDebug(char *msg)
+void DisplayDebug(char ch1, char ch2)
 {
-	DisplayPage8Char(0x10,0x50,msg);
+    value_display[2] = 0x05;
+
+    value_display[5] = 0x94;
+    value_display[6] = ch1;
+    value_display[7] = ch2;
+    HAL_UART_Transmit(&huart1, value_display, 8, 10);
 }
 
 void DisplayVersion(char ch1, char ch2, char ch3){
@@ -2603,7 +2945,7 @@ void DisplayReserveTimePage(){
 }
 
 void DisplayReserveTime(){
-    DisplayTime(0x00, 0x47, uireservetime + 99);
+    DisplayTime(7, uireservetime + 99);
 }
 
 void DisplayReservePopUp(char *msg){
@@ -2625,8 +2967,6 @@ void DisplayReservePopUp(char *msg){
 	display_page[6]=LCD_RESERVEPOPUP_PAGE;
 	HAL_UART_Transmit(&huart1, display_page, 7, 10);
 }
-
-
 
 void LCD_31(int index, int value){	//input Value
     switch(index) {
@@ -2668,7 +3008,7 @@ void LCD_31(int index, int value){	//input Value
 					DisplayUserNumber();
 					DisplaySMSonoffIcon((SMSonoff_Flag&0x01)==0x01);
 					DisplayUSBSecurityonoffIcon(USBSECURITYonoff_Flag);
-					if(DeviceInfo.loginonoff_flag==1){
+					if(DeviceInfo.Loginonoff_flag==1){
 						DisplayPage(LCD_ADMIN_SETTING);
 					}
 					else{
@@ -2830,493 +3170,6 @@ void DisplayCubiclog(int index){
     log_value_display[7] = uivalue & 0xff;
     HAL_UART_Transmit(&huart1, log_value_display, 8, 10);
 }
-void DisplaySelectIcon(int page, int index, int value){
-	unsigned char   Select_icon_display[8] = {0x5A, 0xA5, 0x05, 0x82, 0x00, 0x60, 0x00, 0x01};
-	Select_icon_display[4] = page;
-	Select_icon_display[5] = index;
-    Select_icon_display[7] = value;
-    HAL_UART_Transmit(&huart1, Select_icon_display, 8, 10);
-}
-
-
-//23.06.29
-void DisplaySolutionCheckPopUp(char *msg){
-	unsigned char   display_page[7] = {0x5A, 0xA5, 0x04, 0x80, 0x03, 0x00, 0x00};
-	unsigned char   msg_display[100] = {
-	        0x5a, 0xa5, 0x53, 0x82, 0x01, 0x00, 0x4e, 0x75, 0x72, 0x69, 0x20, 0x53, 0x79, 0x73, 0x74, 0x65, 0x6d
-	};
-    __disable_irq();
-    memset(msg_display + 6, 0, 80);
-    for(int i = 0; i < 80; i++) {
-    	msg_display[6 + i] = msg[i];
-    }
-    HAL_UART_Transmit(&huart1, msg_display, 86, 10);
-
-    memset(msg_display + 6, 0, 80);
-
-    __enable_irq();
-
-	display_page[6]=LCD_SOLUTIONCHECK_PopUp;
-	HAL_UART_Transmit(&huart1, display_page, 7, 10);
-}
-
-void LCD_06(int index, int value){	//input Value
-    switch(index) {
-		case 0x00 :
-			switch(value) {
-				case 0x01 :
-		    		SelectID=ID0;
-		    		DisplayPage(LCD_LOGIN_SELECT_ID);
-					break;
-				case 0x03 :
-					DisplayMsg("Please input password");
-					DisplayPage(LCD_LOGIN_WRONG_PW);
-					break;
-			}
-			break;
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
-}
-void LCD_07(int index, int value){	//input Value
-    switch(index) {
-		case 0x00 :
-			switch(value) {
-				case 0x01 :
-		    		SelectID=ID0;
-		    		DisplayPage(LCD_LOGIN_SELECT_ID);
-					break;
-				case 0x03 :
-					if(IDLIST.Status[SelectID]==1||SelectID==5){
-						PasswordCheck();
-						LoginProcess();
-					}
-					else if(IDLIST.Status[SelectID]==0){
-						DisplayMsg("Account Locked, Please contact your admin");
-						LOGIN_ID=0;
-						DisplayPage(LCD_LOGIN_WRONG_PW);
-					}
-					break;
-			}
-			break;
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
-}
-
-void Display06page(){
-	switch(SelectID){
-		case USER1 :
-			DisplayPage10Char(0x06,0x10,"   User1  ");
-			break;
-		case USER2 :
-			DisplayPage10Char(0x06,0x10,"   User2  ");
-			break;
-		case USER3 :
-			DisplayPage10Char(0x06,0x10,"   User3  ");
-			break;
-		case SUPERUSER :
-			DisplayPage10Char(0x06,0x10," Superuser");
-			break;
-		case ADMIN :
-			DisplayPage10Char(0x06,0x10,"   Admin  ");
-			break;
-	}
-
-	DisplayPage(LCD_SELECTED_ID);
-}
-
-
-void LCD_51(int index, int value){	//input Value
-    switch(index) {
-		case 0x00 :
-			switch(value) {
-				case 0x01 :
-					//Test_flag=18;
-					if(DeviceInfo.device_version==8){
-						TestfInjectionPerMinute=fInjectionPerMinute2;
-					}
-					else{
-						TestfInjectionPerMinute=fInjectionPerMinute;
-					}
-					Display52page();
-					DisplayPage(PERI_TEST_PAGE);
-					break;
-				case 0x02 :
-					//Test_flag=18;
-					Display53page();
-					DisplayPage(FAN_TEST_PAGE);
-					break;
-				case 0x04 :
-					DisplayMsg("Do you want to reset configuration");
-					DisplayPage(SETTING_RESET_POPUP_PAGE);
-					break;
-				case 0x05 :
-					Test_flag=0;
-					DisplayDeveloperPage();
-					break;
-			}
-			break;
-		case 0x10 :
-        	if(value>=50&&value<=150){
-        		DeviceInfo.peri1_speed = value;
-			}
-        	else{
-        		DeviceInfo.peri1_speed=100;
-        	}
-			PeristalticSpeed();
-			Write_Flash();
-			Display51page();
-			//DisplayDeveloperPage();
-			break;
-		case 0x20 :
-        	if(value>=50&&value<=150){
-        		DeviceInfo.peri2_speed = value;
-			}
-        	else{
-        		DeviceInfo.peri2_speed=100;
-        	}
-			PeristalticSpeed();
-			Write_Flash();
-			Display51page();
-			//DisplayDeveloperPage();
-			break;
-		case 0x30 :
-        	if(value>=20&&value<=100){
-        		DeviceInfo.fan_high_speed = value;
-			}
-        	else{
-        		DeviceInfo.fan_high_speed=ConstantBlowerFanControlPwmMax;
-        	}
-        	InitFanPump();
-			Write_Flash();
-			Display51page();
-			//DisplayDeveloperPage();
-			break;
-		case 0x40 :
-        	if(value>=20&&value<=100){
-        		DeviceInfo.fan_low_speed = value;
-			}
-        	else{
-        		DeviceInfo.fan_low_speed=ConstantBlowerFanControlPwmMin;
-        	}
-        	InitFanPump();
-			Write_Flash();
-			Display51page();
-			//DisplayDeveloperPage();
-			break;
-		case 0x50 :
-        	if(value/10>=20&&value/10<=65){
-        		DeviceInfo.lower_temperature=(float)value/10;
-			}
-        	else{
-        		DeviceInfo.lower_temperature=ConstantLowerTemperature;
-        	}
-			Write_Flash();
-			Display51page();
-			//DisplayDeveloperPage();
-			break;
-		case 0x60 :
-        	if(value/10>=20&&value/10<=65){
-        		DeviceInfo.upper_temperature=(float)value/10;
-			}
-        	else{
-        		DeviceInfo.upper_temperature=ConstantUpperTemperature;
-        	}
-			Write_Flash();
-			Display51page();
-			//DisplayDeveloperPage();
-			break;
-		case 0x70 :
-        	if(value/10>=75){
-        		DeviceInfo.overheat_temperature=(float)value/10;
-			}
-        	else{
-        		DeviceInfo.overheat_temperature=OverHeat_Temperature;
-        	}
-			Write_Flash();
-			Display51page();
-		case 0x80 :
-        	if(value>=2&&value<=10){
-        		DeviceInfo.PreHeatTime=value;
-			}
-        	else{
-        		DeviceInfo.PreHeatTime=ConstantPreHeatTime;
-        	}
-			Write_Flash();
-			ReCalcTime();
-			Display51page();
-			break;
-		case 0x90 :
-        	if(value>=3&&value<=240){
-        		if((DeviceInfo.LineCleanTime+DeviceInfo.NozzleCleanTime)<value){
-        			DeviceInfo.SterileTime=value;
-        		}
-        		else{
-        			DeviceInfo.SterileTime=ConstantSterileTime;
-        		}
-			}
-        	else{
-        		DeviceInfo.SterileTime=ConstantSterileTime;
-        	}
-			Write_Flash();
-			ReCalcTime();
-			Display51page();
-			break;
-		case 0xA0 :
-			if(value>=1&&value<=5){
-				if((DeviceInfo.SterileTime-DeviceInfo.LineCleanTime)<=value){
-					DeviceInfo.NozzleCleanTime=ConstantNozzleCleanTime;
-				}
-				else{
-					DeviceInfo.NozzleCleanTime=value;
-				}
-			}
-        	else{
-        		DeviceInfo.NozzleCleanTime=ConstantNozzleCleanTime;
-        	}
-			Write_Flash();
-			ReCalcTime();
-			Display51page();
-			break;
-
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
-}
-
-void LCD_52(int index, int value){	//input Value
-    switch(index) {
-		case 0x00 :
-			switch(value) {
-				case 0x01 :
-					Test_Start_flag=1;
-					TestTime=input_test_time;
-					if(TestfInjectionPerMinute==5){
-						DisplayMsg("Peri_Pump(5cc/min) Testing.");
-						Test_flag=16;
-					}
-					else if(TestfInjectionPerMinute==4){
-						DisplayMsg("Peri_Pump(4cc/min) Testing.");
-						Test_flag=17;
-					}
-					else if(TestfInjectionPerMinute==3){
-						DisplayMsg("Peri_Pump(3cc/min) Testing.");
-						Test_flag=18;
-					}
-					else if(TestfInjectionPerMinute==15){
-						DisplayMsg("Peri_Pump(15cc/min) Testing.");
-						Test_flag=16;
-					}
-					else if(TestfInjectionPerMinute==12){
-						DisplayMsg("Peri_Pump(12cc/min) Testing.");
-						Test_flag=17;
-					}
-					else if(TestfInjectionPerMinute==9){
-						DisplayMsg("Peri_Pump(9cc/min) Testing.");
-						Test_flag=18;
-					}
-					DisplayPage(TEST_YES_PAGE);
-					ProcessTestEndTimer();
-					break;
-				case 0x02 :
-					DisplayPage(CHANGE_VALUE_PAGE);
-					break;
-			}
-			break;
-		case 0x10 :
-			if(value<=60){
-				input_test_time=value*60*100;
-			}
-			else{
-				input_test_time=5*60*100;
-			}
-			PeristalticSpeed();
-			Display52page();
-			//DisplayDeveloperPage();
-			break;
-		case 0x20 :
-			if(DeviceInfo.device_version==8){
-				if(value==3){
-					TestfInjectionPerMinute=3;
-				}
-				else if(value==5){
-					TestfInjectionPerMinute=5;
-				}
-				else{
-					TestfInjectionPerMinute=4;
-				}
-			}
-			else{
-				if(value==9){
-					TestfInjectionPerMinute=9;
-				}
-				else if(value==15){
-					TestfInjectionPerMinute=15;
-				}
-				else{
-					TestfInjectionPerMinute=12;
-				}
-
-			}
-			//PeristalticSpeed();
-			Display52page();
-			//DisplayDeveloperPage();
-			break;
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
-}
-
-void LCD_53(int index, int value){	//input Value
-    switch(index) {
-		case 0x00 :
-			switch(value) {
-				case 0x01 :
-					Test_Start_flag=1;
-					TestTime=input_test_time;
-					DisplayMsg("Fan testing.");
-					Test_flag=21;//FAN
-					DisplayPage(TEST_YES_PAGE);
-					ProcessTestEndTimer();
-					break;
-				case 0x02 :
-					DisplayPage(CHANGE_VALUE_PAGE);
-					break;
-			}
-			break;
-		case 0x10 :
-				if(value<=60){
-					input_test_time=value*60*100;
-				}
-				else{
-					input_test_time=5*60*100;
-				}
-				Display53page();
-				//DisplayDeveloperPage();
-			break;
-		case 0x20 :
-				if(value>=20&&value<=100){
-					Testfanspeed=value;
-				}
-				else{
-					Testfanspeed=50;
-				}
-				Display53page();
-				//DisplayDeveloperPage();
-			break;
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
-}
-
-void LCD_54(int index, int value){	//input Value
-    switch(index) {
-		case 0x00 :
-			switch(value) {
-				case 0x01 :
-					Test_Start_flag=0;
-					TurnOffFanPump();
-					TurnOffPeristalticPump();
-					if(Test_flag==20){
-						DisplayMsg("Test Canceled.\n\r"
-								"Please turn off and on the device.");
-						DisplayTime(0x55,0x10,TestTime);
-					}
-					else{
-						DisplayMsg("Canceled");
-						DisplayTime(0x55,0x10,TestTime);
-					}
-					DisplayPage(TEST_COMPLETE_PAGE);
-					TestTime=0;
-					break;
-			}
-			break;
-		case 0x10 :
-			break;
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
-}
-
-void LCD_55(int index, int value){	//input Value
-    switch(index) {
-		case 0x00 :
-			switch(value) {
-				case 0x01 :
-					Test_Start_flag=0;
-					Test_flag=0;
-					TurnOffFanPump();
-					TurnOffPeristalticPump();
-					Display51page();
-					break;
-			}
-			break;
-		case 0x10 :
-			break;
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
-}
-
-void LCD_56(int index, int value){	//input Value
-    switch(index) {
-		case 0x00 :
-			switch(value) {
-				case 0x01 :
-					DeviceInfo.peri1_speed=100;
-					DeviceInfo.peri2_speed=100;
-	        		DeviceInfo.fan_high_speed=ConstantBlowerFanControlPwmMax;
-	        		DeviceInfo.fan_low_speed=ConstantBlowerFanControlPwmMin;
-	        		DeviceInfo.lower_temperature=ConstantLowerTemperature;
-	        		DeviceInfo.upper_temperature=ConstantUpperTemperature;
-	        		DeviceInfo.overheat_temperature=OverHeat_Temperature;
-					PeristalticSpeed();
-					Write_Flash();
-					Display51page();
-					break;
-				case 0x02 :
-					Display51page();
-					break;
-			}
-			break;
-		case 0x10 :
-			break;
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t*)uart1_rx_data, 9);
-}
-
-void Display51page(){
-	DisplayPageValue(0x51,0x10,DeviceInfo.peri1_speed);
-	DisplayPageValue(0x51,0x20,DeviceInfo.peri2_speed);
-	DisplayPageValue(0x51,0x30,DeviceInfo.fan_high_speed);
-	DisplayPageValue(0x51,0x40,DeviceInfo.fan_low_speed);
-	DisplayPageValue(0x51,0x50,DeviceInfo.lower_temperature*10);
-	DisplayPageValue(0x51,0x60,DeviceInfo.upper_temperature*10);
-	DisplayPageValue(0x51,0x70,DeviceInfo.overheat_temperature*10);
-	DisplayPageValue(0x51,0x80,DeviceInfo.PreHeatTime);
-	DisplayPageValue(0x51,0x90,DeviceInfo.SterileTime);
-	DisplayPageValue(0x51,0xA0,DeviceInfo.NozzleCleanTime);
-	DisplayPage(CHANGE_VALUE_PAGE);
-}
-
-void Display52page(){
-	if(input_test_time==0){
-		input_test_time=5*60*100;
-	}
-	DisplayPageValue(0x52,0x10,input_test_time/6000);
-	DisplayPageValue(0x52,0x20,TestfInjectionPerMinute);
-}
-void Display53page(){
-	if(input_test_time==0){
-		input_test_time=5*60*100;
-	}
-	if(Testfanspeed<20||Testfanspeed>100){
-		Testfanspeed=50;
-	}
-	DisplayPageValue(0x53,0x10,input_test_time/6000);
-	DisplayPageValue(0x53,0x20,Testfanspeed);
-}
-void Display54page(){
-
-}
-void Display55page(){
-	DisplayTime(0x55,0x10,input_test_time);
-	DisplayPage(TEST_COMPLETE_PAGE);
-}
 
 void DisplayPageValue(int page ,int index, int value){
 	unsigned char   PageValue[8] = {0x5A, 0xA5, 0x05, 0x82, 0x00, 0x00, 0x00, 0x00};
@@ -3327,49 +3180,10 @@ void DisplayPageValue(int page ,int index, int value){
     HAL_UART_Transmit(&huart1, PageValue, 8, 10);
 }
 
-//문자 출력
-void DisplayPage4Char(int page ,int index, char *msg){
-	unsigned char   PageChar[10] = {0x5A, 0xA5, 0x05, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	PageChar[2]=7; //주소1+주소2+Data	lenth
-	PageChar[4]=page;
-	PageChar[5]=index;
-	PageChar[6]=msg[0];
-	PageChar[7]=msg[1];
-	PageChar[8]=msg[2];
-	PageChar[9]=msg[3];
-    HAL_UART_Transmit(&huart1, PageChar, 10, 10);
-}
-
-void DisplayPage8Char(int page ,int index, char *msg){
-	unsigned char   PageChar[14] = {0x5A, 0xA5, 0x0b, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	PageChar[2]=11; //주소1+주소2+Data	lenth
-	PageChar[4]=page;
-	PageChar[5]=index;
-	PageChar[6]=msg[0];
-	PageChar[7]=msg[1];
-	PageChar[8]=msg[2];
-	PageChar[9]=msg[3];
-	PageChar[10]=msg[4];
-	PageChar[11]=msg[5];
-	PageChar[12]=msg[6];
-	PageChar[13]=msg[7];
-    HAL_UART_Transmit(&huart1, PageChar, 14, 10);
-}
-
-void DisplayPage10Char(int page ,int index, char *msg){
-	unsigned char   PageChar[16] = {0x5A, 0xA5, 0x0d, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	PageChar[2]=13; //주소1+주소2+Data	lenth
-	PageChar[4]=page;
-	PageChar[5]=index;
-	PageChar[6]=msg[0];
-	PageChar[7]=msg[1];
-	PageChar[8]=msg[2];
-	PageChar[9]=msg[3];
-	PageChar[10]=msg[4];
-	PageChar[11]=msg[5];
-	PageChar[12]=msg[6];
-	PageChar[13]=msg[7];
-	PageChar[14]=msg[8];
-	PageChar[15]=msg[9];
-    HAL_UART_Transmit(&huart1, PageChar, 16, 10);
+void DisplaySelectIcon(int page, int index, int value){
+	unsigned char   Select_icon_display[8] = {0x5A, 0xA5, 0x05, 0x82, 0x00, 0x60, 0x00, 0x01};
+	Select_icon_display[4] = page;
+	Select_icon_display[5] = index;
+    Select_icon_display[7] = value;
+    HAL_UART_Transmit(&huart1, Select_icon_display, 8, 10);
 }

@@ -40,8 +40,8 @@ float UserSMS_Flag, ServerSMS_Flag;
 int SMSonoff_Flag;
 extern float nUsedVolume;
 
-unsigned char szStartCommand[37] = "AT*SMSMO=01029755115,01238722145,1,1,";	//  판매처 연락처 입력
-unsigned char szStartCommandCBT[37] = "AT*SMSMO=01075863426,01238722145,1,1,";	// CBT 연락처(01075863426)
+unsigned char szStartCommand[37] = "AT*SMSMO=01029755115,01227526974,1,1,";	//  판매처 연락처 입력
+unsigned char szStartCommandCBT[37] = "AT*SMSMO=01075863426,01227526974,1,1,";	// CBT 연락처(01075863426)
 
 //szStartCommand[25] 통신모듈 번호 첫자리(012 제외)
 //szStartCommandCBT[25] 통신모듈 번호 첫자리
@@ -82,7 +82,7 @@ const unsigned char serialNum[13]={  //Serial Number 입력<FN-S3001A01>
 */
 
 unsigned char serialNum[13]={  //Serial Number 입력<FN-S3001A01>
-		0x3C, 0x46, 0x4E, 0x2D, 0x53, 0x33, 0x30, 0x30, 0x31, 0x41, 0x30, 0x31, 0x3E
+		0x3C, 0x46, 0x4E, 0x2D, 0x53, 0x34, 0x30, 0x30, 0x39, 0x30, 0x30, 0x32, 0x3E
 };
 
 //serialNum[5] - Device Version
@@ -116,10 +116,10 @@ void InitLTEModem(void){
 	}
 
 	for(int i=0;i<4;i++){
-		szStartCommand[24+i]=DeviceInfo.modem_number1[i];
-		szStartCommandCBT[24+i]=DeviceInfo.modem_number1[i];
-		szStartCommand[28+i]=DeviceInfo.modem_number2[i];
-		szStartCommandCBT[28+i]=DeviceInfo.modem_number2[i];
+		szStartCommand[24+i]=DeviceInfo.Modem_number1[i];
+		szStartCommandCBT[24+i]=DeviceInfo.Modem_number1[i];
+		szStartCommand[28+i]=DeviceInfo.Modem_number2[i];
+		szStartCommandCBT[28+i]=DeviceInfo.Modem_number2[i];
 	}
 	//SMS ONOFF SETTING
 	if((SMSonoff_Flag&0x01)==0x01){
@@ -165,7 +165,6 @@ void SendMessage1(unsigned char *msg, int len){
 }
 
 void SendTestMessage(void){
-	EnforceIoActionGap(IO_ACTION_SMS);
 	char mesg[12] = {
 		0xC5, 0xD7, 0xBD, 0xBA, 0xC6, 0xAE, 0xB8, 0xDE, 0xBC, 0xBC, 0xC1, 0xF6
 	};
@@ -193,7 +192,6 @@ void SendTestMessage(void){
 
 void SendEndMessage(void)//요약
 {
-	EnforceIoActionGap(IO_ACTION_SMS);
 	if(Sms_Flag ==9){
 		char ucMessage[100];
 		memset(ucMessage, 0, 100);
@@ -227,7 +225,6 @@ void SendEndMessage(void)//요약
 
 void SendProcessMessage()
 {
-	EnforceIoActionGap(IO_ACTION_SMS);
 	if(Sms_Flag == 0){ // 분사시작
 		char ucMessage[50];
 		int iIndex = g_data_index - 1;
@@ -399,7 +396,6 @@ void SendProcessMessage()
 }
 
 void SendCurrentPPM(int hour){
-	EnforceIoActionGap(IO_ACTION_SMS);
 	char ucMessage[100];
 	memset(ucMessage, 0, 100);
 
@@ -420,7 +416,6 @@ void SendCurrentPPM(int hour){
 	SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 }
 void SendFinishTime(unsigned char smsHour, unsigned char smsMinute){
-	EnforceIoActionGap(IO_ACTION_SMS);
 	char ucMessage[70];
 	memset(ucMessage, 0, 70);
 	char Time[2]={0xBD, 0xC3};
@@ -455,7 +450,6 @@ void SendFinishTime(unsigned char smsHour, unsigned char smsMinute){
 }
 
 void SendReserveTime(unsigned char smsHour, unsigned char smsMinute){	//reserve time
-	EnforceIoActionGap(IO_ACTION_SMS);
 	char ucMessage[70];
 	memset(ucMessage, 0, 70);
 	char Time[2]={0xBD, 0xC3};

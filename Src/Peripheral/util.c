@@ -5,23 +5,25 @@
  *      Author: PC
  */
 
+//extern unsigned int PeristalticPumpPwmCycle;
+extern float fInjectionPerMinute, fInjectionPerCubic;
 
 union fc {
 	float fValue;
 	char  cValue[4];
 };
 
-int Calc_RunningTime(float Cubic, int perCubic, int perMinute)
+int Calc_RunningTime(float fSize)
 {
 	int iTime;
-	iTime = ((Cubic * perCubic * 60) / perMinute);
+	iTime = ((fSize * fInjectionPerCubic * 60) / fInjectionPerMinute);
 	return iTime;
 }
 
-int Calc_Usage(int iTime, int perCubic, int perMinute)
+int Calc_Usage(int iTime)
 {
 	int iSize;
-	iSize = (iTime * perMinute * 10) / perCubic / 60;
+	iSize = (iTime * fInjectionPerMinute * 10) / fInjectionPerCubic / 60;
 	return iSize;
 }
 

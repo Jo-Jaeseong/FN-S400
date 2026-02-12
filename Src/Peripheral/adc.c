@@ -15,7 +15,7 @@ extern DMA_HandleTypeDef hdma_adc1;
 uint32_t uiDensity, uiTemp_AI1, uiTemp_AI2, uiTemp_AI3, uiTemp_AI4;
 uint32_t adcData[5];
 extern float fDensity;
-extern volatile unsigned char Running_Flag;
+extern unsigned char Running_Flag;
 int maxDensity=0, Density=0;
 int arrDensity[5];
 int index=0;
@@ -105,10 +105,6 @@ void DisplayAvgDensity(){
 	hap = hap-max-min;
 	avg = hap/(sizeof(arrDensity)/sizeof(int)-2);
 	fDensity = avg;
-	fDensity=fDensity-5;
-	if(fDensity<=0){
-		fDensity=0;
-	}
 
 	if(Running_Flag){
 		if(avg>avgmax){

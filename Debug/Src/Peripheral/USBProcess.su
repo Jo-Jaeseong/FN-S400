@@ -1,4 +1,4 @@
 USBProcess.c:39:6:USB_Error_Handler	4	static
-USBProcess.c:51:6:DownloadUSB	240	static
-USBProcess.c:149:6:USBTEST	240	static
-USBProcess.c:239:6:DownloadUSB2	256	static
+USBProcess.c:51:6:DownloadUSB	232	static
+USBProcess.c:147:6:USBTEST	232	static
+USBProcess.c:237:6:DownloadUSB2	248	static

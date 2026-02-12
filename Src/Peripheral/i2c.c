@@ -8,8 +8,7 @@
 #include "main.h"
 #include "define.h"
 #include "i2c.h"
-#include "process.h"
-#include "lcd.h"
+#include "Process.h"
 #include "LTE_Modem.h"
 #include "max6675.h"
 
@@ -38,16 +37,15 @@ float fBoardTemperature_Max=0;
 float fHumidity_Max=0;
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c3;
-
+extern unsigned char Sms_Flag;
 unsigned char buffer[5];
 unsigned int rawT, rawH;
 unsigned char Temperature_Error_Flag=0;
 float overheattemp=0;
 int overheatcnt,overheatFlag=0;
+float LowerTemperature=0, UpperTemperature=0;
 int tempArr[10]={};
 int tempIndex=0;
-
-extern struct DeviceInfo_format DeviceInfo;
 
 //SPI 온도 센서 관련
 /*SPI 온습도 센서관련 변수*/
@@ -354,6 +352,7 @@ void GetTemperatureFan(int channel)
 void Module_Temp(int Channel){	//SPI통신 - 모듈 온도 측정
 	uint8_t answer = 0;
 	uint16_t reg = 0;
+	uint8_t string[15] = {0};
 	float ErrorCheckTemp=0;
 
 	answer = max6675ReadReg(&reg,Channel);
@@ -379,7 +378,7 @@ void OverHeatTempCheck(int channel){
 		tempIndex=0;
 	}
 
-	if(fModuleTemperature > DeviceInfo.overheat_temperature) {
+	if(fModuleTemperature > OverHeat_Temperature) {
 		overheattemp = fModuleTemperature;
 	}
 }
@@ -402,7 +401,7 @@ void avgOverHeatTemp(){
 	avg = hap/(sizeof(tempArr)/sizeof(int)-2);
 	checkOverHeat = avg;
 
-	if( checkOverHeat > DeviceInfo.overheat_temperature) {
+	if( checkOverHeat > OverHeat_Temperature) {
 		overheatcnt++;
 	}else{
 		overheatcnt=0;
@@ -458,7 +457,11 @@ void I2CChannelRelease(int channel)
 	HAL_Delay(I2C_DELAY);
 }
 
-void InitTemperature(void){
+void InitTemperature(void)
+{
+	LowerTemperature = ConstantLowerTemperature;
+	UpperTemperature = ConstantUpperTemperature;
+
 	I2CChannelRelease(0);
 	I2CChannelRelease(1);
 	I2CChannelRelease(2);

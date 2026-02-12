@@ -10,6 +10,6 @@
 
 void TurnOnHeater(void);
 void TurnOffHeater(void);
-void AdjustHeaterControl(int addtemp);
+void AdjustHeaterControl(int channel);
 
 #endif /* PERIPHERAL_HEATER_H_ */
