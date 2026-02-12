@@ -25,7 +25,6 @@ int StartPPM;
 int H2O2Sensor_Flag;
 
 static float densityFiltered;
-static int densityStablePpm;
 
 void ResetDensityStats()
 {
@@ -36,7 +35,6 @@ void ResetDensityStats()
 		arrDensity[i] = 0;
 	}
 	densityFiltered = 0;
-	densityStablePpm = 0;
 }
 
 void InitADC()
@@ -121,23 +119,15 @@ void DisplayAvgDensity(){
 	avg = hap/(sizeof(arrDensity)/sizeof(int)-2);
 
 	/*
-	 * 센서 노이즈 억제를 위해 2단계 필터를 적용한다.
-	 * 1) 1차 지수평활(EWMA): 순간 스파이크 완화
-	 * 2) 1ppm 히스테리시스: 문자/표시값의 잔떨림 방지
+	 * 센서 노이즈 억제를 위해 지수평활(EWMA)만 적용한다.
+	 * 1ppm 단위 변화도 반영되도록 히스테리시스는 제거한다.
 	 */
 	densityFiltered = (densityFiltered * 0.7f) + (avg * 0.3f);
 	if(densityFiltered < 0){
 		densityFiltered = 0;
 	}
 
-	if((int)densityFiltered > densityStablePpm + 1){
-		densityStablePpm = (int)densityFiltered;
-	}
-	else if((int)densityFiltered < densityStablePpm - 1){
-		densityStablePpm = (int)densityFiltered;
-	}
-
-	fDensity = densityStablePpm;
+	fDensity = (int)(densityFiltered + 0.5f);
 	if(fDensity<=0){
 		fDensity=0;
 	}
