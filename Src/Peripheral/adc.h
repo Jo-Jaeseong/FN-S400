@@ -11,4 +11,5 @@
 void InitADC();
 void GetDensity();
 void DisplayAvgDensity();
+void ResetDensityStats();
 #endif /* PERIPHERAL_ADC_H_ */

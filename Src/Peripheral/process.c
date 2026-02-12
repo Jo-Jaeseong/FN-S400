@@ -297,6 +297,7 @@ void StartProcess(void){
 	Sms_Flag=0;
 	overheatFlag=0;
 	firstlogcall=1;
+	ResetDensityStats();
 	DisplayRunningPage();
 	SaveStartLog();
 	FirstOneMinute=1;
@@ -332,6 +333,10 @@ void EndProcess(void){
 	}
 	SendEndMessage();
 	Write_Flash();
+	if(ProcessMode!=1&&ProcessMode!=6){
+		Read_LogData_Flash(IndexEndLog);
+		DownloadUSB2(IndexEndLog);
+	}
 	ProcessMode=0;
 
 	sms_enable=0;
@@ -742,9 +747,6 @@ void SaveUsbLog(void){
 		f_data[t_data_index].humidity = fHumidity;
 		f_data[t_data_index].density = fDensity;
 		f_data[t_data_index].volume = nUsedVolume;
-		DisplayDebug("USB_SAVE");
-		DownloadUSB();
-		DisplayDebug("");
 	}
 }
 

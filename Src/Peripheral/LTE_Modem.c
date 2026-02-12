@@ -97,6 +97,7 @@ unsigned char serialNum[13]={  //Serial Number 입력<FN-S3001A01>
 
 
 
+
 void InitLTEModem(void){
 	if(user_number1[0]==0&&user_number1[1]==0&&user_number1[2]==0&&user_number1[3]==0){
 		szStartCommand[12] = '7';
