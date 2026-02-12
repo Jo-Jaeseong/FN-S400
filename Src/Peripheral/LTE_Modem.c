@@ -97,6 +97,19 @@ unsigned char serialNum[13]={  //Serial Number 입력<FN-S3001A01>
 
 
 
+
+static int NormalizeSmsDensity(float density)
+{
+	int ppm = (int)density;
+	if (ppm < 0) {
+		ppm = 0;
+	}
+	if (ppm <= 3) {
+		ppm = 0;
+	}
+	return ppm;
+}
+
 void InitLTEModem(void){
 	if(user_number1[0]==0&&user_number1[1]==0&&user_number1[2]==0&&user_number1[3]==0){
 		szStartCommand[12] = '7';
@@ -205,7 +218,7 @@ void SendEndMessage(void)//요약
 				,summary, smsEnter
 				,temp, (int)startData.temperature, (int)fBoardTemperature_Max, smsEnter
 				,humid, (int)startData.humidity, (int)fHumidity_Max, smsEnter
-				,concentration, maxDensity,smsEnter
+				,concentration, NormalizeSmsDensity((float)maxDensity),smsEnter
 				,sterilizer, (int)startData.volume-(int)nUsedVolume, "0x00"
 				);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
@@ -218,7 +231,7 @@ void SendEndMessage(void)//요약
 				,summary, smsEnter
 				,temp, (int)startData.temperature, (int)fBoardTemperature_Max, smsEnter
 				,humid, (int)startData.humidity, (int)fHumidity_Max, smsEnter
-				,concentration, maxDensity,smsEnter
+				,concentration, NormalizeSmsDensity((float)maxDensity),smsEnter
 				,sterilizer, (int)startData.volume-(int)nUsedVolume, "0x00"
 				);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
@@ -237,7 +250,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -245,7 +258,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature, (int)g_data[iIndex].module_temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
@@ -259,7 +272,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -267,7 +280,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature, (int)g_data[iIndex].module_temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
@@ -280,7 +293,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 				);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -288,7 +301,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature, (int)g_data[iIndex].module_temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
@@ -301,7 +314,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -309,7 +322,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature, (int)g_data[iIndex].module_temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
@@ -322,7 +335,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -330,7 +343,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature, (int)g_data[iIndex].module_temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
@@ -361,7 +374,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -369,7 +382,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature, (int)g_data[iIndex].module_temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
@@ -382,7 +395,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage((unsigned char *)ucMessage, strlen(ucMessage));
 		HAL_Delay(100);
@@ -390,7 +403,7 @@ void SendProcessMessage()
 				serialNum, smsEnter, ProcessStatus,
 				smsEnter, temp, (int)g_data[iIndex].temperature, (int)g_data[iIndex].module_temperature,
 				smsEnter, humid, (int)g_data[iIndex].humidity,
-				smsEnter, concentration, (int)g_data[iIndex].density, "0x00"
+				smsEnter, concentration, NormalizeSmsDensity(g_data[iIndex].density), "0x00"
 		);
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
@@ -407,12 +420,12 @@ void SendCurrentPPM(int hour){
 		hour = 6;
 		char ProcessStatus[7]={ 0x61, 0x6D, 0x20, 0xB3, 0xF3, 0xB5, 0xB5};
 		sprintf(ucMessage, "%d%.7s : %dppm %c", // @suppress("Float formatting support")
-				hour, ProcessStatus, (int)testdata.density, "0x00"
+				hour, ProcessStatus, NormalizeSmsDensity(testdata.density), "0x00"
 		);
 	}else{
 		char ProcessStatus[7]={ 0x68, 0x2B, 0x20, 0xB3, 0xF3, 0xB5, 0xB5};
 		sprintf(ucMessage, "%d%.7s : %dppm %c", // @suppress("Float formatting support")
-				hour, ProcessStatus, (int)testdata.density, "0x00"
+				hour, ProcessStatus, NormalizeSmsDensity(testdata.density), "0x00"
 		);
 	}
 	SendMessage((unsigned char *)ucMessage, strlen(ucMessage));

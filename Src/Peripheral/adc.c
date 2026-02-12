@@ -24,6 +24,16 @@ extern unsigned int SafetyPPM;
 int StartPPM;
 int H2O2Sensor_Flag;
 
+void ResetDensityStats()
+{
+	maxDensity = 0;
+	avgmax = 0;
+	index = 0;
+	for (int i = 0; i < (int)(sizeof(arrDensity) / sizeof(arrDensity[0])); i++) {
+		arrDensity[i] = 0;
+	}
+}
+
 void InitADC()
 {
 	// Define variable to hold the 8 ADC values
@@ -111,8 +121,8 @@ void DisplayAvgDensity(){
 	}
 
 	if(Running_Flag){
-		if(avg>avgmax){
-			avgmax=avg;
+		if((int)fDensity>avgmax){
+			avgmax=(int)fDensity;
 		}
 
 		maxDensity=avgmax;
