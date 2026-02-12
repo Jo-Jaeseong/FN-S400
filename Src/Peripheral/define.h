@@ -55,9 +55,9 @@ extern int ret;
 #define ConstantBlowerFanControlPwmCycle	1200
 
 // PWM Max Percent
-#define ConstantBlowerFanControlPwmMax	 	63
+#define ConstantBlowerFanControlPwmMax	75
 // PWM Min Percent
-#define ConstantBlowerFanControlPwmMin		43//65
+#define ConstantBlowerFanControlPwmMin		45
 // PWM Sterile Percent
 #define ConstantBlowerFanControlPwmMid		50//65
 // Pan duty add percent
