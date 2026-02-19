@@ -743,6 +743,7 @@ void SaveUsbLog(void){
 
 		f_data[t_data_index].hour=t_data.hour;
 		f_data[t_data_index].minute=t_data.minute;
+		f_data[t_data_index].second=t_data.second;
 		f_data[t_data_index].temperature=fBoardTemperature;
 		f_data[t_data_index].humidity = fHumidity;
 		f_data[t_data_index].density = fDensity;

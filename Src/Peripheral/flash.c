@@ -15,10 +15,10 @@
 #include "string.h"
 
 __attribute__((__section__(".user_data"))) const char userConfig[1024];
-__attribute__((__section__(".user_log_data1"))) const char userLogData1[975];
-__attribute__((__section__(".user_log_data2"))) const char userLogData2[975];
-__attribute__((__section__(".user_log_data3"))) const char userLogData3[975];
-__attribute__((__section__(".user_log_data4"))) const char userLogData4[975];
+__attribute__((__section__(".user_log_data1"))) const char userLogData1[1040];
+__attribute__((__section__(".user_log_data2"))) const char userLogData2[1040];
+__attribute__((__section__(".user_log_data3"))) const char userLogData3[1040];
+__attribute__((__section__(".user_log_data4"))) const char userLogData4[1040];
 
 extern int IndexEndLog;
 
@@ -633,7 +633,7 @@ void Read_Flash(){
 
 void Write_LogData_Flash(){
 	int i;
-	unsigned char ucData2[975];
+	unsigned char ucData2[1040];
 
 	//userLogData[4][650];
 	/*
@@ -646,15 +646,16 @@ void Write_LogData_Flash(){
 	ucData[주소]=char 데이터;
 	*/
 	for(int ii=0;ii<65;ii++){
-		ucData2[ii*15]=f_data[ii].year;
-		ucData2[ii*15+1]=f_data[ii].month;
-		ucData2[ii*15+2]=f_data[ii].day;
-		ucData2[ii*15+3]=f_data[ii].hour;
-		ucData2[ii*15+4]=f_data[ii].minute;
-		ucData2[ii*15+5]=f_data[ii].temperature;
-		ucData2[ii*15+6]=f_data[ii].humidity;
-		float2char(f_data[ii].density, ucData2+ii*15+7);
-		float2char(f_data[ii].volume, ucData2+ii*15+11);
+		ucData2[ii*16]=f_data[ii].year;
+		ucData2[ii*16+1]=f_data[ii].month;
+		ucData2[ii*16+2]=f_data[ii].day;
+		ucData2[ii*16+3]=f_data[ii].hour;
+		ucData2[ii*16+4]=f_data[ii].minute;
+		ucData2[ii*16+5]=f_data[ii].second;
+		ucData2[ii*16+6]=f_data[ii].temperature;
+		ucData2[ii*16+7]=f_data[ii].humidity;
+		float2char(f_data[ii].density, ucData2+ii*16+8);
+		float2char(f_data[ii].volume, ucData2+ii*16+12);
 	}
 
 	//__attribute__((__section__(".user_log_data1"))) const char userLogData1[650];
@@ -662,7 +663,7 @@ void Write_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_7, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData1[0] + i, ucData2[i]);
 
 		}
@@ -672,7 +673,7 @@ void Write_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_8, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData2[0] + i, ucData2[i]);
 
 		}
@@ -682,7 +683,7 @@ void Write_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_9, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData3[0] + i, ucData2[i]);
 
 		}
@@ -692,7 +693,7 @@ void Write_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_10, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData4[0] + i, ucData2[i]);
 
 		}
@@ -702,7 +703,7 @@ void Write_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_10, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData4[0] + i, ucData2[i]);
 
 		}
@@ -713,8 +714,8 @@ void Write_LogData_Flash(){
 
 void Write_Shift_LogData_Flash(){
 	int i;
-	unsigned char ucData2[975];
-	unsigned char ucData3[975];
+	unsigned char ucData2[1040];
+	unsigned char ucData3[1040];
 
 	//userLogData[4][650];
 	/*
@@ -727,15 +728,16 @@ void Write_Shift_LogData_Flash(){
 	ucData[주소]=char 데이터;
 	*/
 	for(int ii=0;ii<65;ii++){
-		ucData2[ii*15]=f_data[ii].year;
-		ucData2[ii*15+1]=f_data[ii].month;
-		ucData2[ii*15+2]=f_data[ii].day;
-		ucData2[ii*15+3]=f_data[ii].hour;
-		ucData2[ii*15+4]=f_data[ii].minute;
-		ucData2[ii*15+5]=f_data[ii].temperature;
-		ucData2[ii*15+6]=f_data[ii].humidity;
-		float2char(f_data[ii].density, ucData2+ii*15+7);
-		float2char(f_data[ii].volume, ucData2+ii*15+11);
+		ucData2[ii*16]=f_data[ii].year;
+		ucData2[ii*16+1]=f_data[ii].month;
+		ucData2[ii*16+2]=f_data[ii].day;
+		ucData2[ii*16+3]=f_data[ii].hour;
+		ucData2[ii*16+4]=f_data[ii].minute;
+		ucData2[ii*16+5]=f_data[ii].second;
+		ucData2[ii*16+6]=f_data[ii].temperature;
+		ucData2[ii*16+7]=f_data[ii].humidity;
+		float2char(f_data[ii].density, ucData2+ii*16+8);
+		float2char(f_data[ii].volume, ucData2+ii*16+12);
 	}
 
 	//__attribute__((__section__(".user_log_data1"))) const char userLogData1[650];
@@ -743,7 +745,7 @@ void Write_Shift_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_7, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData1[0] + i, ucData2[i]);
 
 		}
@@ -753,7 +755,7 @@ void Write_Shift_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_8, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData2[0] + i, ucData2[i]);
 
 		}
@@ -763,7 +765,7 @@ void Write_Shift_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_9, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData3[0] + i, ucData2[i]);
 
 		}
@@ -773,7 +775,7 @@ void Write_Shift_LogData_Flash(){
 		HAL_FLASH_Unlock();
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		FLASH_Erase_Sector(FLASH_SECTOR_10, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData4[0] + i, ucData2[i]);
 
 		}
@@ -784,25 +786,25 @@ void Write_Shift_LogData_Flash(){
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
 		//2->1
 		FLASH_Erase_Sector(FLASH_SECTOR_7, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 			ucData3[i]=userLogData2[i];
 			HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData1[0] + i, ucData3[i]);
 		}
 		//3->2
 		FLASH_Erase_Sector(FLASH_SECTOR_8, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 			ucData3[i]=userLogData3[i];
 			HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData2[0] + i, ucData3[i]);
 		}
 		//4->3
 		FLASH_Erase_Sector(FLASH_SECTOR_9, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 			ucData3[i]=userLogData4[i];
 			HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData3[0] + i, ucData3[i]);
 		}
 		//Normal
 		FLASH_Erase_Sector(FLASH_SECTOR_10, VOLTAGE_RANGE_3);
-		for(i = 0; i < 975; i++) {
+		for(i = 0; i < 1040; i++) {
 				 HAL_FLASH_Program(TYPEPROGRAM_BYTE, (uint32_t)&userLogData4[0] + i, ucData2[i]);
 
 		}
@@ -835,67 +837,71 @@ void Read_LogData_Flash(int index){
 	//__attribute__((__section__(".user_log_data1"))) const char userLogData1[650];
 	if(index==1){
 		for(int ii=0;ii<65;ii++){
-			f_data[ii].year=userLogData1[ii*15];
-			f_data[ii].month=userLogData1[ii*15+1];
-			f_data[ii].day=userLogData1[ii*15+2];
+			f_data[ii].year=userLogData1[ii*16];
+			f_data[ii].month=userLogData1[ii*16+1];
+			f_data[ii].day=userLogData1[ii*16+2];
 
-			f_data[ii].hour=userLogData1[ii*15+3];
-			f_data[ii].minute=userLogData1[ii*15+4];
+			f_data[ii].hour=userLogData1[ii*16+3];
+			f_data[ii].minute=userLogData1[ii*16+4];
 
-			f_data[ii].temperature=userLogData1[ii*15+5];
-			f_data[ii].humidity=userLogData1[ii*15+6];
+			f_data[ii].second=userLogData1[ii*16+5];
+			f_data[ii].temperature=userLogData1[ii*16+6];
+			f_data[ii].humidity=userLogData1[ii*16+7];
 
-			f_data[ii].density = char2float((unsigned char *)userLogData1+(ii*15+7));
-			f_data[ii].volume = char2float((unsigned char *)userLogData1+(ii*15+11));
+			f_data[ii].density = char2float((unsigned char *)userLogData1+(ii*16+8));
+			f_data[ii].volume = char2float((unsigned char *)userLogData1+(ii*16+12));
 
 		}
 	}
 	else if(index==2){
 		for(int ii=0;ii<65;ii++){
-			f_data[ii].year=userLogData2[ii*15];
-			f_data[ii].month=userLogData2[ii*15+1];
-			f_data[ii].day=userLogData2[ii*15+2];
+			f_data[ii].year=userLogData2[ii*16];
+			f_data[ii].month=userLogData2[ii*16+1];
+			f_data[ii].day=userLogData2[ii*16+2];
 
-			f_data[ii].hour=userLogData2[ii*15+3];
-			f_data[ii].minute=userLogData2[ii*15+4];
+			f_data[ii].hour=userLogData2[ii*16+3];
+			f_data[ii].minute=userLogData2[ii*16+4];
 
-			f_data[ii].temperature=userLogData2[ii*15+5];
-			f_data[ii].humidity=userLogData2[ii*15+6];
+			f_data[ii].second=userLogData2[ii*16+5];
+			f_data[ii].temperature=userLogData2[ii*16+6];
+			f_data[ii].humidity=userLogData2[ii*16+7];
 
-			f_data[ii].density = char2float((unsigned char *)userLogData2+(ii*15+7));
-			f_data[ii].volume = char2float((unsigned char *)userLogData2+(ii*15+11));
+			f_data[ii].density = char2float((unsigned char *)userLogData2+(ii*16+8));
+			f_data[ii].volume = char2float((unsigned char *)userLogData2+(ii*16+12));
 		}
 	}
 	else if(index==3){
 		for(int ii=0;ii<65;ii++){
-			f_data[ii].year=userLogData3[ii*15];
-			f_data[ii].month=userLogData3[ii*15+1];
-			f_data[ii].day=userLogData3[ii*15+2];
+			f_data[ii].year=userLogData3[ii*16];
+			f_data[ii].month=userLogData3[ii*16+1];
+			f_data[ii].day=userLogData3[ii*16+2];
 
-			f_data[ii].hour=userLogData3[ii*15+3];
-			f_data[ii].minute=userLogData3[ii*15+4];
+			f_data[ii].hour=userLogData3[ii*16+3];
+			f_data[ii].minute=userLogData3[ii*16+4];
 
-			f_data[ii].temperature=userLogData3[ii*15+5];
-			f_data[ii].humidity=userLogData3[ii*15+6];
+			f_data[ii].second=userLogData3[ii*16+5];
+			f_data[ii].temperature=userLogData3[ii*16+6];
+			f_data[ii].humidity=userLogData3[ii*16+7];
 
-			f_data[ii].density = char2float((unsigned char *)userLogData3+(ii*15+7));
-			f_data[ii].volume = char2float((unsigned char *)userLogData3+(ii*15+11));
+			f_data[ii].density = char2float((unsigned char *)userLogData3+(ii*16+8));
+			f_data[ii].volume = char2float((unsigned char *)userLogData3+(ii*16+12));
 		}
 	}
 	else if(index==4){
 		for(int ii=0;ii<65;ii++){
-			f_data[ii].year=userLogData4[ii*15];
-			f_data[ii].month=userLogData4[ii*15+1];
-			f_data[ii].day=userLogData4[ii*15+2];
+			f_data[ii].year=userLogData4[ii*16];
+			f_data[ii].month=userLogData4[ii*16+1];
+			f_data[ii].day=userLogData4[ii*16+2];
 
-			f_data[ii].hour=userLogData4[ii*15+3];
-			f_data[ii].minute=userLogData4[ii*15+4];
+			f_data[ii].hour=userLogData4[ii*16+3];
+			f_data[ii].minute=userLogData4[ii*16+4];
 
-			f_data[ii].temperature=userLogData4[ii*15+5];
-			f_data[ii].humidity=userLogData4[ii*15+6];
+			f_data[ii].second=userLogData4[ii*16+5];
+			f_data[ii].temperature=userLogData4[ii*16+6];
+			f_data[ii].humidity=userLogData4[ii*16+7];
 
-			f_data[ii].density = char2float((unsigned char *)userLogData4+(ii*15+7));
-			f_data[ii].volume = char2float((unsigned char *)userLogData4+(ii*15+11));
+			f_data[ii].density = char2float((unsigned char *)userLogData4+(ii*16+8));
+			f_data[ii].volume = char2float((unsigned char *)userLogData4+(ii*16+12));
 		}
 	}
 
