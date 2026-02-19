@@ -122,7 +122,7 @@ void DownloadUSB(){
 				sprintf(buffer, "20%.2x-%.2x-%.2x,%.2x:%.2x:%.2x,",
 						t_data.year, t_data.month, t_data.day,
 						t_data.hour, t_data.minute, t_data.second);
-				CharStr2HexStr(buffer,buffer1,20);
+				CharStr2HexStr(buffer,buffer1,23);
 				f_puts(buffer1, &MyFile);
 				sprintf(buffer, "%2d,", (int)t_data.temperature);
 				CharStr2HexStr(buffer,buffer1,3);
@@ -214,7 +214,7 @@ void USBTEST(){
 				sprintf(buffer, "20%.2x-%.2x-%.2x,%.2x:%.2x:%.2x,",
 						t_data.year, t_data.month, t_data.day,
 						t_data.hour, t_data.minute, t_data.second);
-				CharStr2HexStr(buffer,buffer1,20);
+				CharStr2HexStr(buffer,buffer1,23);
 				f_puts(buffer1, &MyFile);
 				sprintf(buffer, "%2d,", (int)t_data.temperature);
 				CharStr2HexStr(buffer,buffer1,3);
@@ -318,9 +318,9 @@ void DownloadUSB2(int index){
 				if(USBSECURITYonoff_Flag==1){
 					for(int i=1;i<65;i++){
 						if(f_data[i].year!=0){
-							sprintf(buffer, "20%.2x-%.2x-%.2x,%.2x:%.2x:00,",
-									f_data[i].year, f_data[i].month, f_data[i].day, f_data[i].hour, f_data[i].minute);
-							CharStr2HexStr(buffer,buffer1,20);
+							sprintf(buffer, "20%.2x-%.2x-%.2x,%.2x:%.2x:%.2x,",
+									f_data[i].year, f_data[i].month, f_data[i].day, f_data[i].hour, f_data[i].minute, f_data[i].second);
+							CharStr2HexStr(buffer,buffer1,23);
 							f_puts(buffer1, &MyFile);
 							sprintf(buffer, "%2d,", (int)f_data[i].temperature);
 							CharStr2HexStr(buffer,buffer1,3);
@@ -341,8 +341,8 @@ void DownloadUSB2(int index){
 					f_puts("Date, Time, Board Temperature, Board Humidity, Density(ppm), Volume(cc)\n", &MyFile);
 					for(int i=1;i<65;i++){
 						if(f_data[i].year!=0){
-							sprintf(buffer, "%.2x-%.2x-%.2x,%.2x:%.2x,",
-									f_data[i].year, f_data[i].month, f_data[i].day, f_data[i].hour, f_data[i].minute);
+							sprintf(buffer, "%.2x-%.2x-%.2x,%.2x:%.2x:%.2x,",
+									f_data[i].year, f_data[i].month, f_data[i].day, f_data[i].hour, f_data[i].minute, f_data[i].second);
 							f_puts(buffer, &MyFile);
 							sprintf(buffer, "%d,", (int)f_data[i].temperature);
 							f_puts(buffer, &MyFile);

@@ -65,7 +65,7 @@ struct log_format {
 
 struct FLData {
 	unsigned char year, month, day;
-	unsigned char hour, minute;
+	unsigned char hour, minute, second;
 	unsigned char	temperature, humidity;
 	float		  	density;
 	float			volume;
