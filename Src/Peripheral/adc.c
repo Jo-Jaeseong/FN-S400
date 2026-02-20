@@ -7,6 +7,7 @@
 
 #include "main.h"
 #include "lcd.h"
+#include "define.h"
 //#include "interrupt.h"
 
 extern ADC_HandleTypeDef hadc1;
@@ -113,7 +114,8 @@ void DisplayAvgDensity(){
 	hap = hap-max-min;
 	avg = hap/(sizeof(arrDensity)/sizeof(int)-2);
 
-	fDensity = (int)(avg + 0.5f);
+	fDensity = avg;
+	fDensity = fDensity - ConstantH2O2SensorCalibration;
 	if(fDensity<=0){
 		fDensity=0;
 	}

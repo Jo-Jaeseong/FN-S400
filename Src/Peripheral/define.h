@@ -77,6 +77,8 @@ extern int ret;
 #define ConstantInjectionPerMinute2	3
 #define ConstantInjectionPerCubic		6
 
+// H2O2 센서 농도 보정치(ppm), 기본값 2ppm
+#define ConstantH2O2SensorCalibration	2
 
 #define ConstantCubic					100
 #define ConstantCirculationTime			0
