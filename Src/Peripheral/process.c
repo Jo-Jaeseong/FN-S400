@@ -117,13 +117,11 @@ unsigned int iTwoHourCounter=1;
 unsigned int iOneHourCounter=0;
 unsigned int FiveHourSMS;
 unsigned int OneHourSMS;
-unsigned int SafetyPPM;
 unsigned int CheckPPM6;
 unsigned int ScrubberOnOff_Flag;
 
 int PreHeatCnt=1;
 extern int arrDensity[5];
-extern int StartPPM;
 
 
 
@@ -302,7 +300,6 @@ void StartProcess(void){
 	SaveStartLog();
 	FirstOneMinute=1;
 	iHourCounter=0;
-	SafetyPPM=0;
 	ScrubberOnOff_Flag=0;
 	SaveUsbLog();
 	OneHourSMS=0;
@@ -343,7 +340,6 @@ void EndProcess(void){
 	PreHeatCnt=1;
 	FiveHourSMS=1;
 	OneHourSMS=1;
-	SafetyPPM=1;
 	CheckPPM6=1;
 	DisplayModeIcon(0);
 	DisplayOperationPage();
@@ -773,7 +769,6 @@ void SaveStartLog(void){
 	startData.temperature = fBoardTemperature;
 	startData.humidity = fHumidity;
 	startData.volume = 0;
-	StartPPM = fDensity;
 	startIndex++;
 }
 void SaveEndLog(void){
@@ -797,7 +792,6 @@ void SaveStartLog(void){
 	startData.humidity = fHumidity;
 	startData.volume = 0;
 	startData.ID[0] = LOGIN_ID;
-	StartPPM = fDensity;
 	startIndex++;
 }
 void SaveEndLog(void){

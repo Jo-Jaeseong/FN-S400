@@ -20,11 +20,7 @@ int maxDensity=0, Density=0;
 int arrDensity[5];
 int index=0;
 int avgmax=0;
-extern unsigned int SafetyPPM;
-int StartPPM;
 int H2O2Sensor_Flag;
-
-static float densityFiltered;
 
 void ResetDensityStats()
 {
@@ -34,7 +30,6 @@ void ResetDensityStats()
 	for (int i = 0; i < (int)(sizeof(arrDensity) / sizeof(arrDensity[0])); i++) {
 		arrDensity[i] = 0;
 	}
-	densityFiltered = 0;
 }
 
 void InitADC()
@@ -118,16 +113,7 @@ void DisplayAvgDensity(){
 	hap = hap-max-min;
 	avg = hap/(sizeof(arrDensity)/sizeof(int)-2);
 
-	/*
-	 * 센서 노이즈 억제를 위해 지수평활(EWMA)만 적용한다.
-	 * 1ppm 단위 변화도 반영되도록 히스테리시스는 제거한다.
-	 */
-	densityFiltered = (densityFiltered * 0.7f) + (avg * 0.3f);
-	if(densityFiltered < 0){
-		densityFiltered = 0;
-	}
-
-	fDensity = (int)(densityFiltered + 0.5f);
+	fDensity = (int)(avg + 0.5f);
 	if(fDensity<=0){
 		fDensity=0;
 	}
@@ -138,13 +124,6 @@ void DisplayAvgDensity(){
 		}
 
 		maxDensity=avgmax;
-	}else {
-		if(SafetyPPM==1){
-		  if(fDensity <= StartPPM+10){
-//			SavePPM(0);
-			SafetyPPM=0;
-		  }
-		}
 	}
 	index=0;
 
