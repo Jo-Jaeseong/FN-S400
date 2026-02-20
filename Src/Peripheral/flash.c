@@ -564,22 +564,30 @@ void Read_Flash(){
 	if(DeviceInfo.overheat_temperature==0){
 		DeviceInfo.overheat_temperature=OverHeat_Temperature;
 	}
+	if(DeviceInfo.overheat_temperature<75 || DeviceInfo.overheat_temperature>120){
+		DeviceInfo.overheat_temperature=OverHeat_Temperature;
+	}
 
 	DeviceInfo.PreHeatTime=userConfig[preheat_time_DATA];
 	DeviceInfo.LineCleanTime=userConfig[line_clean_time_DATA];
 	DeviceInfo.NozzleCleanTime=userConfig[nozzle_clean_time_DATA];
 	DeviceInfo.SterileTime=userConfig[sterile_time_DATA];
 
-	if(DeviceInfo.PreHeatTime==0){
+	if(DeviceInfo.PreHeatTime < 2 || DeviceInfo.PreHeatTime > 10){
 		DeviceInfo.PreHeatTime=ConstantPreHeatTime;
 	}
-	if(DeviceInfo.LineCleanTime==0){
+	if(DeviceInfo.LineCleanTime < 1 || DeviceInfo.LineCleanTime > 10){
 		DeviceInfo.LineCleanTime=ConstantLineCleanTime;
 	}
-	if(DeviceInfo.NozzleCleanTime==0){
+	if(DeviceInfo.NozzleCleanTime < 1 || DeviceInfo.NozzleCleanTime > 5){
 		DeviceInfo.NozzleCleanTime=ConstantNozzleCleanTime;
 	}
-	if(DeviceInfo.SterileTime==0){
+	if(DeviceInfo.SterileTime < 3 || DeviceInfo.SterileTime > 240){
+		DeviceInfo.SterileTime=ConstantSterileTime;
+	}
+	if((DeviceInfo.LineCleanTime + DeviceInfo.NozzleCleanTime) >= DeviceInfo.SterileTime){
+		DeviceInfo.LineCleanTime=ConstantLineCleanTime;
+		DeviceInfo.NozzleCleanTime=ConstantNozzleCleanTime;
 		DeviceInfo.SterileTime=ConstantSterileTime;
 	}
 

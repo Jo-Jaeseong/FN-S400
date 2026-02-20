@@ -3034,6 +3034,7 @@ void LCD_51(int index, int value){	//input Value
         	}
 			Write_Flash();
 			Display51page();
+				break;
 		case 0x80 :
         	if(value>=2&&value<=10){
         		DeviceInfo.PreHeatTime=value;
