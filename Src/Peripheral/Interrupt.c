@@ -39,11 +39,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 				Timer_CentiSecond_Flag = 1;
 				uiTotalTime ++;
 				if(EndTimer_Flag == 0){
-					uiEndTimeCounter--;
+					if(uiEndTimeCounter > 0){
+						uiEndTimeCounter--;
+					}
 					if(uiEndTimeCounter == 0){
 						EndTimer_Flag = 1;
 					}
-					if(uiWaitTime[ProcessMode] > 0){
+					if(ProcessMode >= 1 && ProcessMode <= 4 && uiWaitTime[ProcessMode] > 0){
 						uiWaitTime[ProcessMode]--;
 					}
 					if(uireservetime>0){
@@ -57,7 +59,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 			}
 			if(Test_Start_flag){
 				if(EndTimer_Flag == 0){
-					uiEndTimeCounter--;
+					if(uiEndTimeCounter > 0){
+						uiEndTimeCounter--;
+					}
 					if(TestTime>0){
 						TestTime--;
 					}
