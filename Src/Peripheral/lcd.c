@@ -37,7 +37,8 @@ extern unsigned char uart1_rx_data[20];
 unsigned char uart1_rx_data_2[100];
 extern volatile unsigned int  ui1sCounter;
 extern unsigned int g_data_index;//, g_data_serial_index;
-extern volatile unsigned char Running_Flag, UART_Receive_Flag;
+extern volatile unsigned char Running_Flag, UART_Receive_Flag, EndTimer_Flag, ProcessWait_Flag;
+extern volatile unsigned int uiEndTimeCounter;
 
 int PeristalticPumpCnt=0;
 
@@ -254,6 +255,7 @@ extern int H2O2Sensor_Flag;
 
 unsigned int expected_uiFinishTime;
 extern unsigned int uireservetime;
+extern unsigned int uireserve_setting_time;
 extern unsigned char ProcessMode;
 int select_index=1;
 
@@ -1094,6 +1096,7 @@ void DoActionButton(int key){
         case 5:
         	uiScrubTime = 100;
         	uireservetime = 100;
+        	uireserve_setting_time = uireservetime;
         	ReCalcTime();
         	DisplayOperationPage();
             HAL_Delay(100);
@@ -1137,12 +1140,13 @@ void DoActionButton(int key){
 
         case RESERVATOIN_YES_BUTTON:	//Reservation Yes
         	//ReserveSettings
-        	uireservetime=100;
+        	uireservetime = uireserve_setting_time;
         	DisplayReserveSettings();
         	break;
         case RESERVATOIN_SETTING_START_BUTTON:	//Reservation Setting Start
         	//LTE Message send
         	//Reserve Process start
+        	uireservetime = uireserve_setting_time;
         	Running_Flag=1;
         	ReserveProcess();
 			ProcessMode=6;
@@ -1153,7 +1157,21 @@ void DoActionButton(int key){
         	break;
 
         case RESERVATOIN_CANCEL_BUTTON:	//stop
-        	CancelProcess();
+        	if(ProcessMode==6){
+        		Running_Flag = 0;
+        		ProcessMode = 0;
+        		ProcessWait_Flag = 0;
+        		EndTimer_Flag = 0;
+        		uiEndTimeCounter = 0;
+        		uireservetime = uireserve_setting_time;
+        		ReCalcTime();
+        		DisplayModeIcon(0);
+        		DisplayOperationPage();
+        		DisplayPopUpMessage("Reservation canceled");
+        	}
+        	else{
+        		CancelProcess();
+        	}
         	break;
 
 
@@ -1593,6 +1611,7 @@ void LCD_SetValues(int index, int value){
 			if(uireservetime==0){
 				uireservetime=100;
 			}
+			uireserve_setting_time = uireservetime;
 			ReCalcTime();
 			HAL_Delay(100);
 			DisplayReserveSettings();

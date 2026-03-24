@@ -139,6 +139,7 @@ struct DeviceInfo_format DeviceInfo;
 extern unsigned int expected_uiFinishTime;
 struct data_format Reserve_data;
 unsigned int uireservetime = 100;
+unsigned int uireserve_setting_time = 100;
 
 struct FLData	f_data[65];
 
@@ -393,6 +394,7 @@ void ProcessEndTimer(void){
 		else {
 			ProcessWait_Flag = 0;
 			if(ProcessMode == 6) {	//해당부분 추가
+				uireservetime = uireserve_setting_time;
 				StartProcess();		//해당부분 추가
 			}
 			else if(ProcessMode == 5) {

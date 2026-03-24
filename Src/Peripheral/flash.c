@@ -636,6 +636,12 @@ void Read_Flash(){
 
 	DeviceInfo.loginonoff_flag=userConfig[loginonoff_flag_DATA];
 	DeviceInfo.reservationonoff_flag=userConfig[reservationonoff_flag_DATA];
+	if(DeviceInfo.loginonoff_flag!=0){
+		DeviceInfo.loginonoff_flag=1;
+	}
+	if(DeviceInfo.reservationonoff_flag!=0){
+		DeviceInfo.reservationonoff_flag=1;
+	}
 
 }
 
