@@ -251,7 +251,7 @@ void Reset_Setting_Flash(){
 		ucData[LOG_DATA+13+(i*14)]=startData.ID[i+1];
 	}
 
-	ucData[IndexEndLog]=IndexEndLog; //추가
+	ucData[IndexEndLog_DATA]=IndexEndLog; //추가
 
 	 HAL_FLASH_Unlock();
 	 __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );

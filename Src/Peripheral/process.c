@@ -332,8 +332,15 @@ void EndProcess(void){
 	SendEndMessage();
 	Write_Flash();
 	if(ProcessMode!=1&&ProcessMode!=6){
-		Read_LogData_Flash(IndexEndLog);
-		DownloadUSB2(IndexEndLog);
+		int exportIndex = IndexEndLog;
+		if(exportIndex < 1){
+			exportIndex = 1;
+		}
+		else if(exportIndex > 4){
+			exportIndex = 4;
+		}
+		Read_LogData_Flash(exportIndex);
+		DownloadUSB2(exportIndex);
 	}
 	ProcessMode=0;
 
