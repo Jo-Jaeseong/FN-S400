@@ -495,7 +495,7 @@ void Read_Flash(){
 
 
 	for(int i=0;i<5;i++){
-		for(int j = 0 ; j<5; j++){
+		for(int j = 0 ; j<4; j++){
 			RFIDData.RFIDValue[i][j]=userConfig[RFIDValue_DATA+4*i+j];
 		}
 		RFIDData.H2O2Volume[i] = char2float((unsigned char *)userConfig+RFIDVolume_DATA+4*i);
