@@ -68,7 +68,7 @@ void DisplayRESERVEATOINOnoffIcon();
 
 
 void DisplayScrubPopUp(void);
-void DisplayVersion(char ch1, char ch2, char ch3);
+void DisplayVersion(char *msg);
 void DisplayPopUpMessage(char *msg);
 void DisplayMsg(char *msg);
 

@@ -18,7 +18,7 @@ extern struct DeviceInfo_format DeviceInfo;
 extern int PeristalticPumpCnt;
 
 void TurnOnPeristalticPump(void){
-	PeristalticPumpCnt++;
+	PeristalticPumpCnt=1;
 	// PeristalticPump On.
 	HAL_GPIO_WritePin(PeristalticPump1_GPIO_Port, PeristalticPump1_Pin, GPIO_PIN_SET);
 	HAL_TIM_PWM_Start(&htim5,TIM_CHANNEL_2);  //startup PeristalticPumpPwm1

@@ -170,14 +170,9 @@ void SendTestMessage(void){
 	char mesg[12] = {
 		0xC5, 0xD7, 0xBD, 0xBA, 0xC6, 0xAE, 0xB8, 0xDE, 0xBC, 0xBC, 0xC1, 0xF6
 	};
-	char startStatus[4]={
-			0xBD, 0xC3, 0xC0, 0xDB
-	};
 	char ucMessage[150];
 	memset(ucMessage, 0, 150);
-	int iIndex = g_data_index - 1;
 	memset(ucMessage, 0, 40);
-	char ProcessStatus[6]={ 0xC8, 0xAF, 0xB1, 0xE2, 0xC1, 0xDF};
 	sprintf(ucMessage, "%.13s", // @suppress("Float formatting support")
 			mesg
 	);
@@ -188,8 +183,6 @@ void SendTestMessage(void){
 			mesg
 	);
 	SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
-
-	iIndex = 0;
 }
 
 void SendEndMessage(void)//요약
@@ -230,9 +223,9 @@ void SendProcessMessage()
 {
 	EnforceIoActionGap(IO_ACTION_SMS);
 	if(Sms_Flag == 0){ // 분사시작
-		char ucMessage[50];
+		char ucMessage[100];
 		int iIndex = g_data_index - 1;
-		memset(ucMessage, 0, 50);
+		memset(ucMessage, 0, 100);
 		char ProcessStatus[8]={ 0xBA, 0xD0, 0xBB, 0xE7, 0xBD, 0xC3, 0xC0, 0xDB};
 		sprintf(ucMessage, "%.13s%.2s %.8s %.2s %.4s:%.2dC %.2s %.4s:%.2d%% %.2s %.4s:%dppm %c", // @suppress("Float formatting support")
 				serialNum, smsEnter, ProcessStatus,
@@ -252,9 +245,9 @@ void SendProcessMessage()
 		iIndex = 0;
 		Sms_Flag++;
 	} else if(Sms_Flag == 1){ // 분사중
-		char ucMessage[50];
+		char ucMessage[100];
 		int iIndex = g_data_index - 1;
-		memset(ucMessage, 0, 50);
+		memset(ucMessage, 0, 100);
 		char ProcessStatus[6]={ 0xBA, 0xD0, 0xBB, 0xE7, 0xC1, 0xDF};
 		sprintf(ucMessage, "%.13s%.2s %.6s %.2s %.4s:%.2dC %.2s %.4s:%.2d%% %.2s %.4s:%dppm %c", // @suppress("Float formatting support")
 				serialNum, smsEnter, ProcessStatus,
@@ -273,9 +266,9 @@ void SendProcessMessage()
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
 	} else if(Sms_Flag ==2){ //멸균시작
-		char ucMessage[60];
+		char ucMessage[100];
 		int iIndex = g_data_index - 1;
-		memset(ucMessage, 0, 60);
+		memset(ucMessage, 0, 100);
 		char ProcessStatus[8]={ 0xB8, 0xEA, 0xB1, 0xD5, 0xBD, 0xC3, 0xC0, 0xDB};
 		sprintf(ucMessage, "%.13s%.2s %.8s %.2s %.4s:%.2dC %.2s %.4s:%.2d%% %.2s %.4s:%dppm %c", // @suppress("Float formatting support")
 				serialNum, smsEnter, ProcessStatus,
@@ -294,9 +287,9 @@ void SendProcessMessage()
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
 	} else if(Sms_Flag ==3 ){ //멸균중
-		char ucMessage[50];
+		char ucMessage[100];
 		int iIndex = g_data_index - 1;
-		memset(ucMessage, 0, 50);
+		memset(ucMessage, 0, 100);
 		char ProcessStatus[6]={ 0xB8, 0xEA, 0xB1, 0xD5, 0xC1, 0xDF};
 		sprintf(ucMessage, "%.13s%.2s %.6s %.2s %.4s:%.2dC %.2s %.4s:%.2d%% %.2s %.4s:%dppm %c", // @suppress("Float formatting support")
 				serialNum, smsEnter, ProcessStatus,
@@ -315,9 +308,9 @@ void SendProcessMessage()
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
 	} else if(Sms_Flag ==4 ){ //종료
-		char ucMessage[40];
+		char ucMessage[100];
 		int iIndex = g_data_index - 1;
-		memset(ucMessage, 0, 40);
+		memset(ucMessage, 0, 100);
 		char ProcessStatus[4]={ 0xC1, 0xBE, 0xB7, 0xE1};
 		sprintf(ucMessage, "%.13s%.2s %.4s %.2s %.4s:%.2dC %.2s %.4s:%.2d%% %.2s %.4s:%dppm %c", // @suppress("Float formatting support")
 				serialNum, smsEnter, ProcessStatus,
@@ -354,9 +347,9 @@ void SendProcessMessage()
 		}
 
 	} else if(Sms_Flag ==7){ //환기시작
-		char ucMessage[40];
+		char ucMessage[100];
 		int iIndex = g_data_index - 1;
-		memset(ucMessage, 0, 40);
+		memset(ucMessage, 0, 100);
 		char ProcessStatus[8]={ 0xC8, 0xAF, 0xB1, 0xE2, 0xBD, 0xC3, 0xC0, 0xDB};
 		sprintf(ucMessage, "%.13s%.2s %.8s %.2s %.4s:%.2dC %.2s %.4s:%.2d%% %.2s %.4s:%dppm %c", // @suppress("Float formatting support")
 				serialNum, smsEnter, ProcessStatus,
@@ -375,9 +368,9 @@ void SendProcessMessage()
 		SendMessage1((unsigned char *)ucMessage, strlen(ucMessage));
 		iIndex = 0;
 	}else if(Sms_Flag==8){	//환기중
-		char ucMessage[70];
+		char ucMessage[100];
 		int iIndex = g_data_index - 1;
-		memset(ucMessage, 0, 70);
+		memset(ucMessage, 0, 100);
 		char ProcessStatus[6]={ 0xC8, 0xAF, 0xB1, 0xE2, 0xC1, 0xDF};
 		sprintf(ucMessage, "%.13s%.2s %.6s %.2s %.4s:%.2dC %.2s %.4s:%.2d%% %.2s %.4s:%dppm %c", // @suppress("Float formatting support")
 				serialNum, smsEnter, ProcessStatus,

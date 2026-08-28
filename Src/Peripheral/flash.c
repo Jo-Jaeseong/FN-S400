@@ -14,11 +14,10 @@
 #include "flash.h"
 #include "string.h"
 
-__attribute__((__section__(".user_data"))) const char userConfig[1024];
-__attribute__((__section__(".user_log_data1"))) const char userLogData1[1040];
-__attribute__((__section__(".user_log_data2"))) const char userLogData2[1040];
-__attribute__((__section__(".user_log_data3"))) const char userLogData3[1040];
-__attribute__((__section__(".user_log_data4"))) const char userLogData4[1040];
+__attribute__((__section__(".user_log_data1"))) volatile const char userLogData1[1040];
+__attribute__((__section__(".user_log_data2"))) volatile const char userLogData2[1040];
+__attribute__((__section__(".user_log_data3"))) volatile const char userLogData3[1040];
+__attribute__((__section__(".user_log_data4"))) volatile const char userLogData4[1040];
 
 extern int IndexEndLog;
 
@@ -110,6 +109,78 @@ extern unsigned char szStartCommand[37],szStartCommandCBT[37];	//�Ǹ�ó ��
 #define sterile_time_DATA					239	//[1] int
 
 #define LOG_DATA								250	//[56]
+
+/*
+ * S400(동국제약) 이관 데이터 1회성 기본값
+ * 출처: 참고자료/FN-S400_donkok_flash_data.md (덤프 시점 2026-08-26 추정)
+ * 이 값들은 최초 공장 초기화(erase 후 첫 부팅) 시 userConfig의 초기 내용이 되며,
+ * Reset_Setting_Flash / Write_Flash 가 처음 호출되는 순간부터는 위 함수들이 다시 채워 쓴다.
+ * peri1/2_speed, fan_high/low_speed, lower/upper/overheat_temperature, preheat/line_clean/
+ * nozzle_clean/sterile_time 는 원본 덤프의 스키마(3단 유량별 PWM 보정 테이블)가 현재 버전과
+ * 호환되지 않아 대응값이 없으므로 0으로 두어 Read_Flash의 기본 상수 fallback을 그대로 따른다.
+ */
+__attribute__((__section__(".user_data"))) volatile const char userConfig[1024] = {
+	[InjectionPerMinute_DATA] = 12,
+	[InjectionPerCubic_DATA] = 7,
+	[Cubic_DATA+0] = 0x00, [Cubic_DATA+1] = 0x00, [Cubic_DATA+2] = 0x20, [Cubic_DATA+3] = 0x41, // 10.0f
+
+	[IndexEndLog_DATA] = 5,
+	[SMSonoff_Flag_DATA] = 0x10,
+	[BeforeRFID_DATA] = 4,
+
+	[user_number1_DATA+0]='2', [user_number1_DATA+1]='0', [user_number1_DATA+2]='5', [user_number1_DATA+3]='4',
+	[user_number2_DATA+0]='1', [user_number2_DATA+1]='2', [user_number2_DATA+2]='4', [user_number2_DATA+3]='1',
+
+	[device_version_DATA] = 2,
+	[Serial_Year_DATA] = '2', [Serial_Month_DATA] = '9', [Serial_Num1_DATA] = '0', [Serial_Num2_DATA] = '4',
+
+	[modem_number1_DATA+0]='3', [modem_number1_DATA+1]='8', [modem_number1_DATA+2]='9', [modem_number1_DATA+3]='7',
+	[modem_number2_DATA+0]='4', [modem_number2_DATA+1]='0', [modem_number2_DATA+2]='2', [modem_number2_DATA+3]='5',
+
+	// RFID 카드 이력 5슬롯: 카드값(ASCII 4자리), 잔량(float LE), 연도(연도-2000, raw), 월(raw) — 슬롯0은 빈 슬롯이라 전부 0
+	[RFIDValue_DATA + 1*4+0]='3', [RFIDValue_DATA + 1*4+1]='0', [RFIDValue_DATA + 1*4+2]='3', [RFIDValue_DATA + 1*4+3]='8',
+	[RFIDValue_DATA + 2*4+0]='3', [RFIDValue_DATA + 2*4+1]='0', [RFIDValue_DATA + 2*4+2]='4', [RFIDValue_DATA + 2*4+3]='8',
+	[RFIDValue_DATA + 3*4+0]='3', [RFIDValue_DATA + 3*4+1]='0', [RFIDValue_DATA + 3*4+2]='0', [RFIDValue_DATA + 3*4+3]='1',
+	[RFIDValue_DATA + 4*4+0]='3', [RFIDValue_DATA + 4*4+1]='0', [RFIDValue_DATA + 4*4+2]='3', [RFIDValue_DATA + 4*4+3]='7',
+
+	[RFIDVolume_DATA + 1*4+0]=0x9A, [RFIDVolume_DATA + 1*4+1]=0xF9, [RFIDVolume_DATA + 1*4+2]=0x67, [RFIDVolume_DATA + 1*4+3]=0x44, // 927.9f
+	[RFIDVolume_DATA + 2*4+0]=0x9A, [RFIDVolume_DATA + 2*4+1]=0xF9, [RFIDVolume_DATA + 2*4+2]=0x67, [RFIDVolume_DATA + 2*4+3]=0x44, // 927.9f
+	[RFIDVolume_DATA + 3*4+0]=0xCD, [RFIDVolume_DATA + 3*4+1]=0x1C, [RFIDVolume_DATA + 3*4+2]=0x37, [RFIDVolume_DATA + 3*4+3]=0x45, // 2929.8f
+	[RFIDVolume_DATA + 4*4+0]=0x9A, [RFIDVolume_DATA + 4*4+1]=0xF9, [RFIDVolume_DATA + 4*4+2]=0x67, [RFIDVolume_DATA + 4*4+3]=0x44, // 927.9f
+
+	[RFIDYear_DATA+1]=25, [RFIDYear_DATA+2]=26, [RFIDYear_DATA+3]=26, [RFIDYear_DATA+4]=25,
+	[RFIDMonth_DATA+1]=6, [RFIDMonth_DATA+2]=2, [RFIDMonth_DATA+3]=5, [RFIDMonth_DATA+4]=6,
+
+	// 계정 5슬롯: PW(raw digit), 마지막 로그인(BCD), 상태 — 슬롯0만 사용중(PW 1234, 기본 관리자 비번과 동일)
+	[AccountPassword_DATA+0]=1, [AccountPassword_DATA+1]=2, [AccountPassword_DATA+2]=3, [AccountPassword_DATA+3]=4,
+	[AccountLastLogin_DATA+0]=0x26, [AccountLastLogin_DATA+1]=0x06, [AccountLastLogin_DATA+2]=0x13, [AccountLastLogin_DATA+3]=0x16, [AccountLastLogin_DATA+4]=0x22,
+	[AccountStatus_DATA+0]=1,
+
+	[AccountLastLogin_DATA+4*5+0]=0x26, [AccountLastLogin_DATA+4*5+1]=0x08, [AccountLastLogin_DATA+4*5+2]=0x26, [AccountLastLogin_DATA+4*5+3]=0x15, [AccountLastLogin_DATA+4*5+4]=0x56,
+
+	[loginonoff_flag_DATA] = 1,
+
+	// 동작 히스토리 로그 4슬롯: 시작(BCD 5), cubic(100단위 분리 2), 종료(BCD 5), status, 사용계정ID
+	[LOG_DATA+0*14+0]=0x26, [LOG_DATA+0*14+1]=0x03, [LOG_DATA+0*14+2]=0x07, [LOG_DATA+0*14+3]=0x15, [LOG_DATA+0*14+4]=0x57,
+	[LOG_DATA+0*14+5]=1, [LOG_DATA+0*14+6]=48,
+	[LOG_DATA+0*14+7]=0x26, [LOG_DATA+0*14+8]=0x03, [LOG_DATA+0*14+9]=0x07, [LOG_DATA+0*14+10]=0x20, [LOG_DATA+0*14+11]=0x31,
+	[LOG_DATA+0*14+12]=3, [LOG_DATA+0*14+13]=1,
+
+	[LOG_DATA+1*14+0]=0x26, [LOG_DATA+1*14+1]=0x05, [LOG_DATA+1*14+2]=0x09, [LOG_DATA+1*14+3]=0x17, [LOG_DATA+1*14+4]=0x31,
+	[LOG_DATA+1*14+5]=1, [LOG_DATA+1*14+6]=48,
+	[LOG_DATA+1*14+7]=0x26, [LOG_DATA+1*14+8]=0x05, [LOG_DATA+1*14+9]=0x09, [LOG_DATA+1*14+10]=0x22, [LOG_DATA+1*14+11]=0x05,
+	[LOG_DATA+1*14+12]=3, [LOG_DATA+1*14+13]=1,
+
+	[LOG_DATA+2*14+0]=0x26, [LOG_DATA+2*14+1]=0x06, [LOG_DATA+2*14+2]=0x14, [LOG_DATA+2*14+3]=0x17, [LOG_DATA+2*14+4]=0x02,
+	[LOG_DATA+2*14+5]=1, [LOG_DATA+2*14+6]=48,
+	[LOG_DATA+2*14+7]=0x26, [LOG_DATA+2*14+8]=0x06, [LOG_DATA+2*14+9]=0x14, [LOG_DATA+2*14+10]=0x21, [LOG_DATA+2*14+11]=0x35,
+	[LOG_DATA+2*14+12]=3, [LOG_DATA+2*14+13]=1,
+
+	[LOG_DATA+3*14+0]=0x26, [LOG_DATA+3*14+1]=0x08, [LOG_DATA+3*14+2]=0x21, [LOG_DATA+3*14+3]=0x14, [LOG_DATA+3*14+4]=0x32,
+	[LOG_DATA+3*14+5]=0, [LOG_DATA+3*14+6]=10,
+	[LOG_DATA+3*14+7]=0x26, [LOG_DATA+3*14+8]=0x08, [LOG_DATA+3*14+9]=0x21, [LOG_DATA+3*14+10]=0x15, [LOG_DATA+3*14+11]=0x03,
+	[LOG_DATA+3*14+12]=2, [LOG_DATA+3*14+13]=5,
+};
 
 void Reset_Setting_Flash(){
 	if(Running_Flag==0){

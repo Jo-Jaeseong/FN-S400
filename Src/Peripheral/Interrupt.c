@@ -22,14 +22,14 @@ unsigned char uart1_rx_data[20] = {0};
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 
-extern unsigned int uiWaitTime[5];
+extern volatile unsigned int uiWaitTime[5];
 extern volatile unsigned int uiTotalTime, uiFinishTime;
-extern unsigned char ProcessMode;
-extern int PeristalticPumpOnOff_Flag,FinishTimeControl_Spary;
+extern volatile unsigned char ProcessMode;
+extern volatile int PeristalticPumpOnOff_Flag,FinishTimeControl_Spary;
 
 extern volatile int Test_Start_flag;
-extern unsigned int TestTime;
-extern unsigned int uireservetime;
+extern volatile unsigned int TestTime;
+extern volatile unsigned int uireservetime;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM7){

@@ -33,7 +33,7 @@
 static uint32_t last_io_action_ms;
 static IoActionType last_io_action_type = IO_ACTION_NONE;
 
-extern unsigned int uiWaitTime[5];		// 0 : Not Used, 1 : PreHeat, 2 : Spray, 3 : Sterile, 4 : Scrub
+extern volatile unsigned int uiWaitTime[5];		// 0 : Not Used, 1 : PreHeat, 2 : Spray, 3 : Sterile, 4 : Scrub
 extern volatile unsigned int uiFinishTime;
 extern volatile unsigned int uiTotalTime;
 
@@ -59,7 +59,8 @@ int BeforeRFIDFlag=1;
 int SaveLastRFID;
 
 extern int checkret, overheatFlag;
-unsigned char ProcessMode, SprayEnable_Flag, Sterile_Step, Heater_Flag;
+volatile unsigned char ProcessMode;
+unsigned char SprayEnable_Flag, Sterile_Step, Heater_Flag;
 unsigned char Sms_Flag=0;
 
 struct data_format	g_data[1500];
@@ -99,8 +100,8 @@ void EnforceIoActionGap(IoActionType action_type)
 struct data_format finish_data;
 
 int ret;
-int PeristalticPumpOnOff_Flag;
-int FinishTimeControl_Spary;
+volatile int PeristalticPumpOnOff_Flag;
+volatile int FinishTimeControl_Spary;
 
 int FirstOneMinute=0;
 int DisplayUsedVolume_flag;
@@ -138,14 +139,14 @@ struct DeviceInfo_format DeviceInfo;
 //23.06.01 Reservation
 extern unsigned int expected_uiFinishTime;
 struct data_format Reserve_data;
-unsigned int uireservetime = 100;
+volatile unsigned int uireservetime = 100;
 unsigned int uireserve_setting_time = 100;
 
 struct FLData	f_data[65];
 
 extern int Test_flag;
 extern volatile int Test_Start_flag;
-extern unsigned int TestTime;
+extern volatile unsigned int TestTime;
 extern int Testfanspeed;
 
 
@@ -253,7 +254,10 @@ int H2O2Check(){
 }
 void H2O2Read(){
 	RFIDData.fH2O2Volume=0;
-	sprintf(RFIDData.CurrentRFIDValue,"%c%c%c%c",0,0,0,0);
+	RFIDData.CurrentRFIDValue[0]=0;
+	RFIDData.CurrentRFIDValue[1]=0;
+	RFIDData.CurrentRFIDValue[2]=0;
+	RFIDData.CurrentRFIDValue[3]=0;
 	InitRFID();
 	ret = ReadRFID();
 	if(ret==-2){//11.04추가
@@ -307,6 +311,7 @@ void StartProcess(void){
 	FiveHourSMS=0;
 	iOneHourCounter=0;
 	iTenMinuteCounter=0;
+	iFiveMinuteCounter=0;
 	iHourCounter=0;
 }
 
@@ -768,29 +773,6 @@ void TestSaveUsbLog(void){
 	USBTEST();
 }
 
-
-
-/*
-void SaveStartLog(void){
-	unsigned char week;
-	ReadRTC( &startData.year, &startData.month, &startData.day, &week,
-			&startData.hour, &startData.minute, &startData.second);
-	startData.temperature = fBoardTemperature;
-	startData.humidity = fHumidity;
-	startData.volume = 0;
-	startIndex++;
-}
-void SaveEndLog(void){
-	unsigned char week;
-	ReadRTC(&endData.year, &endData.month, &endData.day, &week,
-			&endData.hour, &endData.minute, &endData.second);
-	endData.temperature = fBoardTemperature;
-	endData.humidity = fHumidity;
-	endData.volume = nUsedVolume;
-	endIndex++;
-	IndexEndLog++;
-}
-*/
 void SaveStartLog(void){
 	unsigned char week, second;
 	ReadRTC(&startData.year[0], &startData.month[0], &startData.day[0], &week,
@@ -958,13 +940,23 @@ void OneMinuteProcess(void)
 			CheckHour6();
 		}
 	}
-	if(DisplayUsedVolume_flag){	//1분마다 log 저장
+	if(DisplayUsedVolume_flag && iFiveMinuteCounter==0){	//5분마다 log 저장
 		DisplayDebug("Saving..");
 		SaveActionLog();
 		SaveEndLogFlash(IndexEndLog);
 		Write_LogData_Flash();
 		Write_Flash();
 		DisplayDebug("");
+		// 플래시 저장(erase) 동안 정지된 시간만큼 보정 (약 2회 erase ≈ 200centisec)
+		if(ProcessMode==2 && uiEndTimeCounter>FLASH_SAVE_DELAY_COMPENSATION){
+			uiEndTimeCounter -= FLASH_SAVE_DELAY_COMPENSATION;
+		}
+		if(ProcessMode==2 && uiFinishTime>FLASH_SAVE_DELAY_COMPENSATION){
+			uiFinishTime -= FLASH_SAVE_DELAY_COMPENSATION;
+		}
+		if(ProcessMode==2 && uiWaitTime[2]>FLASH_SAVE_DELAY_COMPENSATION){
+			uiWaitTime[2] -= FLASH_SAVE_DELAY_COMPENSATION;
+		}
 	}
 
 }
@@ -1102,6 +1094,8 @@ void SterileProcess(void)
 
 	SprayEnable_Flag = 0;
 	SaveLog();
+	Write_LogData_Flash();
+	Write_Flash();
 	TurnOnSolenoidFluid();
 //	SetFanPumpSpeedAllMax();
 	SetFanPumpSpeedAllMid();
@@ -1255,7 +1249,7 @@ void RFIDCompare(){
 	if(checkret !=-2){
 		for(int i=1;i<5;i++){
 			for(int j=0;j<4;j++){
-				if((unsigned char *)RFIDData.CurrentRFIDValue[j] == (unsigned char *)RFIDData.RFIDValue[i][j]){		//한 글자씩 비교
+				if(RFIDData.CurrentRFIDValue[j] == RFIDData.RFIDValue[i][j]){		//한 글자씩 비교
 					comaparerf++;
 				}else{
 

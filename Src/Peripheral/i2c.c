@@ -375,7 +375,7 @@ void OverHeatTempCheck(int channel){
 	tempArr[tempIndex]=fModuleTemperature;
 	tempIndex++;
 
-	if(tempIndex>10){
+	if(tempIndex>=10){
 		tempIndex=0;
 	}
 

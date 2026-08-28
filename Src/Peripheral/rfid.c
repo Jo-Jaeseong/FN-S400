@@ -220,7 +220,7 @@ uint32_t ReadRFID(void)
 		ret = MFRC522_Read(i, RFIDbuffer + i * 16);
 	}
 #endif
-	if(RFIDbuffer[0]!='C' && RFIDbuffer[1]!='B' && RFIDbuffer[2]!='T'){
+	if(RFIDbuffer[0]!='C' || RFIDbuffer[1]!='B' || RFIDbuffer[2]!='T'){
 		ret=-2;
 		checkret=-2;
 	}else{
@@ -238,7 +238,10 @@ uint32_t ReadRFID(void)
 		RFIDData.month0=(RFIDbuffer[6]-'0')*10+(RFIDbuffer[7]-'0');
 		RFIDData.concentration=RFIDbuffer[9]-'0';
 		//RFIDData.Volume=RFIDbuffer[10];
-		sprintf(RFIDData.CurrentRFIDValue,"%c%c%c%c",RFIDbuffer[10],RFIDbuffer[11],RFIDbuffer[12],RFIDbuffer[13]);
+		RFIDData.CurrentRFIDValue[0]=RFIDbuffer[10];
+		RFIDData.CurrentRFIDValue[1]=RFIDbuffer[11];
+		RFIDData.CurrentRFIDValue[2]=RFIDbuffer[12];
+		RFIDData.CurrentRFIDValue[3]=RFIDbuffer[13];
 	}
 	return ret;
 }
