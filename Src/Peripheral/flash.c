@@ -120,13 +120,13 @@ extern unsigned char szStartCommand[37],szStartCommandCBT[37];	//�Ǹ�ó ��
  * 호환되지 않아 대응값이 없으므로 0으로 두어 Read_Flash의 기본 상수 fallback을 그대로 따른다.
  */
 __attribute__((__section__(".user_data"))) volatile const char userConfig[1024] = {
+	/*
 	[InjectionPerMinute_DATA] = 12,
 	[InjectionPerCubic_DATA] = 7,
 	[Cubic_DATA+0] = 0x00, [Cubic_DATA+1] = 0x00, [Cubic_DATA+2] = 0x20, [Cubic_DATA+3] = 0x41, // 10.0f
 
 	[IndexEndLog_DATA] = 5,
 	[SMSonoff_Flag_DATA] = 0x10,
-	[BeforeRFID_DATA] = 4,
 
 	[user_number1_DATA+0]='2', [user_number1_DATA+1]='0', [user_number1_DATA+2]='5', [user_number1_DATA+3]='4',
 	[user_number2_DATA+0]='1', [user_number2_DATA+1]='2', [user_number2_DATA+2]='4', [user_number2_DATA+3]='1',
@@ -137,19 +137,7 @@ __attribute__((__section__(".user_data"))) volatile const char userConfig[1024] 
 	[modem_number1_DATA+0]='3', [modem_number1_DATA+1]='8', [modem_number1_DATA+2]='9', [modem_number1_DATA+3]='7',
 	[modem_number2_DATA+0]='4', [modem_number2_DATA+1]='0', [modem_number2_DATA+2]='2', [modem_number2_DATA+3]='5',
 
-	// RFID 카드 이력 5슬롯: 카드값(ASCII 4자리), 잔량(float LE), 연도(연도-2000, raw), 월(raw) — 슬롯0은 빈 슬롯이라 전부 0
-	[RFIDValue_DATA + 1*4+0]='3', [RFIDValue_DATA + 1*4+1]='0', [RFIDValue_DATA + 1*4+2]='3', [RFIDValue_DATA + 1*4+3]='8',
-	[RFIDValue_DATA + 2*4+0]='3', [RFIDValue_DATA + 2*4+1]='0', [RFIDValue_DATA + 2*4+2]='4', [RFIDValue_DATA + 2*4+3]='8',
-	[RFIDValue_DATA + 3*4+0]='3', [RFIDValue_DATA + 3*4+1]='0', [RFIDValue_DATA + 3*4+2]='0', [RFIDValue_DATA + 3*4+3]='1',
-	[RFIDValue_DATA + 4*4+0]='3', [RFIDValue_DATA + 4*4+1]='0', [RFIDValue_DATA + 4*4+2]='3', [RFIDValue_DATA + 4*4+3]='7',
-
-	[RFIDVolume_DATA + 1*4+0]=0x9A, [RFIDVolume_DATA + 1*4+1]=0xF9, [RFIDVolume_DATA + 1*4+2]=0x67, [RFIDVolume_DATA + 1*4+3]=0x44, // 927.9f
-	[RFIDVolume_DATA + 2*4+0]=0x9A, [RFIDVolume_DATA + 2*4+1]=0xF9, [RFIDVolume_DATA + 2*4+2]=0x67, [RFIDVolume_DATA + 2*4+3]=0x44, // 927.9f
-	[RFIDVolume_DATA + 3*4+0]=0xCD, [RFIDVolume_DATA + 3*4+1]=0x1C, [RFIDVolume_DATA + 3*4+2]=0x37, [RFIDVolume_DATA + 3*4+3]=0x45, // 2929.8f
-	[RFIDVolume_DATA + 4*4+0]=0x9A, [RFIDVolume_DATA + 4*4+1]=0xF9, [RFIDVolume_DATA + 4*4+2]=0x67, [RFIDVolume_DATA + 4*4+3]=0x44, // 927.9f
-
-	[RFIDYear_DATA+1]=25, [RFIDYear_DATA+2]=26, [RFIDYear_DATA+3]=26, [RFIDYear_DATA+4]=25,
-	[RFIDMonth_DATA+1]=6, [RFIDMonth_DATA+2]=2, [RFIDMonth_DATA+3]=5, [RFIDMonth_DATA+4]=6,
+	// RFID 카드 이력: 동국 이관 데이터 제외, 전 슬롯 빈 슬롯(0)으로 초기화
 
 	// 계정 5슬롯: PW(raw digit), 마지막 로그인(BCD), 상태 — 슬롯0만 사용중(PW 1234, 기본 관리자 비번과 동일)
 	[AccountPassword_DATA+0]=1, [AccountPassword_DATA+1]=2, [AccountPassword_DATA+2]=3, [AccountPassword_DATA+3]=4,
@@ -180,6 +168,7 @@ __attribute__((__section__(".user_data"))) volatile const char userConfig[1024] 
 	[LOG_DATA+3*14+5]=0, [LOG_DATA+3*14+6]=10,
 	[LOG_DATA+3*14+7]=0x26, [LOG_DATA+3*14+8]=0x08, [LOG_DATA+3*14+9]=0x21, [LOG_DATA+3*14+10]=0x15, [LOG_DATA+3*14+11]=0x03,
 	[LOG_DATA+3*14+12]=2, [LOG_DATA+3*14+13]=5,
+	*/
 };
 
 void Reset_Setting_Flash(){
