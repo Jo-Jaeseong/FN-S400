@@ -319,7 +319,7 @@ void GetTemperatureFan(int channel)
 
 		rawH = buffer[0] << 8 | buffer[1]; //combine 2 8-bit into 1 16bit
 		fHumidity = ((float) (rawH * 125) / 65536) - 6.0;
-		if((fHumidity>=100||fHumidity<6)){
+		if((fHumidity>=100||fHumidity<15)){
 			fHumidity=100;
 		}
 		if(fHumidity>fHumidity_Max){
