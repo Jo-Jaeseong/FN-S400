@@ -138,7 +138,7 @@ unsigned char   Loginstatus_display[11] = {0x5A, 0xA5, 0x08, 0x82, 0x20, 0x01, 0
 unsigned char   ModemNum_display[18] = {0x5A, 0xA5, 0x0f, 0x82, 0x20, 0x11, 0x00, 0x00, 0x00};
 unsigned char   UserNum_display[18] = {0x5A, 0xA5, 0x0f, 0x82, 0x20, 0x21, 0x00, 0x00, 0x00};
 unsigned char   UserNum_blank_display[16] = {0x5A, 0xA5, 0x09, 0x82, 0x02, 0x74, 0x00, 0x00, 0x00};
-unsigned char   version_display[11] = {0x5A, 0xA5, 0x08, 0x82, 0x20, 0x30, 0x00, 0x00, 0x00};
+unsigned char   version_display[16] = {0x5A, 0xA5, 0x0d, 0x82, 0x20, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 const unsigned char rtc_setting[13] = {0x5A, 0xA5, 0x0a, 0x80, 0x1f, 0x5a, 0x19, 0x06, 0x11, 0x03, 0x10, 0x26, 0x00};
 const unsigned char rtc_date_get[6] = {0x5A, 0xA5, 0x03, 0x81, 0x20, 0x03};
@@ -165,7 +165,7 @@ unsigned char   error_display[100] = {0x5a, 0xa5, 0x53, 0x82, 0x01, 0x00, 0x4e, 
 extern unsigned char serialNum[13];
 extern unsigned char szStartCommand[37],szStartCommandCBT[37];	//�Ǹ�ó ����ó �Է�
 
-unsigned int uiWaitTime[5];
+volatile unsigned int uiWaitTime[5];
 volatile unsigned int uiFinishTime;
 volatile unsigned int uiTotalTime;
 extern unsigned int scrubbingTime;
@@ -180,7 +180,7 @@ float fDensity;
 
 struct data_format ggdata[10];
 extern int ret;
-extern int PeristalticPumpOnOff_Flag;
+extern volatile int PeristalticPumpOnOff_Flag;
 extern unsigned int uiScrubTime;
 
 extern struct log_format startData;
@@ -254,9 +254,9 @@ extern int USBConnect_Flag;
 extern int H2O2Sensor_Flag;
 
 unsigned int expected_uiFinishTime;
-extern unsigned int uireservetime;
+extern volatile unsigned int uireservetime;
 extern unsigned int uireserve_setting_time;
-extern unsigned char ProcessMode;
+extern volatile unsigned char ProcessMode;
 int select_index=1;
 
 void InitLCD(void){
@@ -270,7 +270,7 @@ void InitLCD(void){
 
     //Display Version
     DisplayDebug("");
-    DisplayVersion('3','3','3');
+    DisplayVersion(FIRMWARE_VERSION);
     InitDisplayValues();
 }
 
@@ -423,7 +423,7 @@ void LCD_Function_Process(int index, int value){
 #define NOZZLE_CLEAN				8
 #define TEST_COMPLETE				9
 
-unsigned int TestTime=0;
+volatile unsigned int TestTime=0;
 unsigned int input_test_time=0;
 
 int Test_flag=0;
@@ -1635,7 +1635,7 @@ void LCD_SetValues(int index, int value){
             break;
         case 0x24 : // set InjectionPerMinute
         	if(DeviceInfo.device_version==8){
-            	if(value==3||value==4||value||5){
+            	if(value==3||value==4||value==5){
             		fInjectionPerMinute2 = value;
     			}
             	else{
@@ -2204,7 +2204,6 @@ void DisplayOperationPage(void){
 void DisplaySettingPage(){
 	DisplaySerialNumber();
 	DisplayHardwareVersion();
-	//DisplayVersion('3','1','3');
 	DisplayModemNumber();
 
 	SelectID=LOGIN_ID;
@@ -2374,13 +2373,10 @@ void DisplayDebug(char *msg)
 	DisplayPage8Char(0x10,0x50,msg);
 }
 
-void DisplayVersion(char ch1, char ch2, char ch3){
-	version_display[6]=ch1;
-	version_display[7]='.';
-	version_display[8]=ch2;
-	version_display[9]='.';
-	version_display[10]=ch3;
-	HAL_UART_Transmit(&huart1, version_display, 11, 10);
+void DisplayVersion(char *msg){
+	for(int i = 0; i < 10; i++)
+		version_display[6 + i] = msg[i];
+	HAL_UART_Transmit(&huart1, version_display, 16, 10);
 }
 
 void ReadRTC(unsigned char *year, unsigned char *month, unsigned char *day, unsigned char *week, unsigned char *hour, unsigned char *minute, unsigned char *second){

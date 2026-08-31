@@ -83,7 +83,7 @@ void GetDensity(){
 //	float test = (float)Density/8.26;	//300ppm
 //	arrInsert(arrDensity,strlen(arrDensity),(int)test);
 //	arrAppend(arrDensity,(int)test);
-	arrDensity[index]=test;
+	arrDensity[index % (sizeof(arrDensity)/sizeof(arrDensity[0]))]=test;
 	index++;
 //	fDensity = (float)Density / 4.96;
 //	if(maxDensity < (int)fDensity){

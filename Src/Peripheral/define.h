@@ -9,7 +9,8 @@ extern int ret;
 #ifndef PERIPHERAL_DEFINE_H_
 #define PERIPHERAL_DEFINE_H_
 
-
+/* Version.md 의 버전과 동일하게 유지할 것 */
+#define FIRMWARE_VERSION				"3.3.3 B263"
 
 //test time
 #define TIME_FAN_TEST		5900
@@ -24,6 +25,9 @@ extern int ret;
 #define TIME_CLEAN2		3000
 
 #define TIME_GAP		100
+
+// 5분마다 발생하는 플래시 저장(erase 2회) 블로킹 보정값 (centisec, 2초)
+#define FLASH_SAVE_DELAY_COMPENSATION	200
 
 
 
@@ -77,8 +81,8 @@ extern int ret;
 #define ConstantInjectionPerMinute2	3
 #define ConstantInjectionPerCubic		6
 
-// H2O2 센서 농도 보정치(ppm), 기본값 5ppm
-#define ConstantH2O2SensorCalibration	5
+// H2O2 센서 농도 보정치(ppm), 기본값 0ppm (보정 없음, 현장에서 필요 시 플래시 설정으로 조정)
+#define ConstantH2O2SensorCalibration	0
 
 #define ConstantCubic					100
 #define ConstantCirculationTime			0

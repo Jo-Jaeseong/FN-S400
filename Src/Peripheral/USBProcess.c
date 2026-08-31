@@ -261,6 +261,12 @@ void USBTEST(){
 }
 void DownloadUSB2(int index){
 	EnforceIoActionGap(IO_ACTION_USB);
+	if(index < 1){
+		index = 1;
+	}
+	else if(index > 4){
+		index = 4;
+	}
 	if(startData.year[index]!=0){
 		FRESULT res; /* FatFs function common result code */
 
